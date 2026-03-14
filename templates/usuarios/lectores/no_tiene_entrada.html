@@ -1,0 +1,45 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Sin Entrada{% endblock %}
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Eventos" title="Sin Entrada" %}
+            {% endblock pagetitle %}
+
+            <div style="margin: 0; padding: 0; background-color: #eeeeee;" bgcolor="#eeeeee">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td align="center" bgcolor="#eeeeee">
+                            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;">
+                                <tr>
+                                    <td align="center" style="font-size:0; padding: 35px;" bgcolor="red">
+                                        <h1 style="font-size: 36px; font-weight: 800; color: #ffffff;">Sin Entrada</h1>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" bgcolor="#ffffff" style="padding: 35px;">
+                                        <h2 style="font-size: 30px; font-weight: 800; color: #333333;">
+                                            El usuario no tiene entrada
+                                        </h2>
+                                        <p style="font-size: 16px; color: #777777;">
+                                            <strong>{{ usuario.aNombre }} {{ usuario.aApellido }}</strong> no ha comprado una entrada para <strong>{{ evento.aNombre }}</strong>.
+                                        </p>
+                                        <a href="{% url 'escaneo_evento' %}" style="font-size: 18px; color: #ffffff; background-color: #FF0000; padding: 15px 30px; text-decoration: none; border-radius: 5px;">
+                                            Escanear otro
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+    </div> 
+</div>
+
+{% endblock %}

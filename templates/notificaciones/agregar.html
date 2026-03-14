@@ -1,0 +1,134 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Crear Notificación{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'libs/dropzone/dist/dropzone.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Notificaciones" title="Crear Notificación" %}
+            {% endblock pagetitle %}
+            <div class="alert alert-danger" role="alert" {% if not form.errors %}style="display: none;"{% endif %}>
+                <strong>Errores:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field }}: {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <form method="POST" id="create-notification-form" enctype="multipart/form-data" autocomplete="off">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Información</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label" for="id_titulo">Título de la Notificación</label>
+                                    {{ form.titulo }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="id_mensaje">Mensaje</label>
+                                    {{ form.mensaje }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="id_imagen">Imagen (opcional)</label>
+                                    {{ form.imagen }}
+                                    <div class="mt-4">
+                                        <label class="form-label">Vista previa de la notificación Web Push</label>
+                                        <div id="web-push-preview" style="border:1px solid #ccc; border-radius:8px; max-width:400px; background:#f9f9f9; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                                            <div style="display:flex; align-items:center; padding:10px;">
+                                                <img id="preview-icon" src="{% static 'images/notification_icon.png' %}" alt="Icono" style="width:40px; height:40px; border-radius:4px; margin-right:10px;">
+                                                <div>
+                                                    <strong id="preview-title" style="font-size:16px;">{{ form.titulo.value|default:"Título de la notificación" }}</strong><br>
+                                                    <small id="preview-message" style="color:#555;">{{ form.mensaje.value|default:"Aquí se mostrará el mensaje de la notificación" }}</small>
+                                                </div>
+                                            </div>
+                                            <div id="preview-image-container" style="display:none;">
+                                                <img id="preview-image" src="" alt="Imagen de la notificación" style="width:100%; border-top:1px solid #ddd;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>   
+                    <div class="col-lg-4">
+                        <div class="text-end mb-3">
+                            <button type="submit" class="btn btn-primary w-sm">Guardar</button>
+                        </div>
+                    </div> 
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'libs/dropzone/dist/dropzone-min.js' %}"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function() {
+            var output = document.getElementById('notification-image-preview');
+            output.src = reader.result;
+            output.style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    document.getElementById('id_titulo').addEventListener('input', function() {
+        document.getElementById('preview-title').innerText = this.value || "Título de la notificación";
+    });
+
+    document.getElementById('id_mensaje').addEventListener('input', function() {
+        document.getElementById('preview-message').innerText = this.value || "Aquí se mostrará el mensaje de la notificación";
+    });
+
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function() {
+            var img = document.getElementById('preview-image');
+            img.src = reader.result;
+            img.style.display = 'block';
+            document.getElementById('preview-image-container').style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    document.getElementById('id_imagen').onchange = previewImage;</script>
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'error',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+{% endblock extra_js %}

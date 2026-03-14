@@ -1,0 +1,138 @@
+{% extends "web/layouts/base.html" %}
+{% load static %}
+{% block title %}Mis Compras{% endblock %}
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+{% block content %}
+<div class="auth-page-wrapper pt-5">
+  <div class="auth-page-content">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 col-xl-5">
+          <div class="card mt-4">
+            <div class="card-body p-4">
+              <div class="text-center">
+                <h5 class="text-primary">Mis Compras / Entradas</h5>
+                <form method="post" class="mt-4 mb-4 text-center">
+                  {% csrf_token %}
+                  <label for="codigo">¿Tienes un código de entrada?</label>
+                  <div class="input-group" style="max-width: 400px; margin: auto;">
+                    <input type="text" name="codigo" id="codigo" class="form-control" placeholder="Ingresa el código">
+                    <button type="submit" class="btn btn-primary">Canjear</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mt-4">
+            <div class="card-body p-4 text-center">
+              <h5 class="text-primary">Entradas Compradas</h5>
+              {% if compras_directas %}
+              <div class="list-group">
+                {% for compra in compras_directas %}
+                <div class="list-group-item text-start">
+                  <h5>{{ compra.entrada.aNombre }}</h5>
+                  <p><strong>Evento:</strong> {{ compra.entrada.idEvento.aNombre }}</p>
+                  <p><strong>Cantidad:</strong> {{ compra.nCantidad }}</p>
+                  <p><strong>Costo:</strong> ${{ compra.monto_pago|floatformat:2 }} MXN</p>
+                  <p><strong>Método de pago:</strong> {{ compra.get_metodo_pago_display }}</p>
+                  <p><strong>Estado del pago:</strong>
+                    {% if compra.status_pago == "pagado" %}
+                      <span class="badge bg-success">Completado</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Pendiente</span>
+                      {% if compra.metodo_pago == "efectivo" %}
+
+                        <div class="mt-2 d-flex gap-2 flex-wrap">
+                          <a class="btn btn-outline-primary btn-sm"
+                             href="{% url 'instrucciones_pago_efectivo' compra.idCompra 'html' %}"
+                             target="_blank" rel="noopener">
+                            Ver instrucciones (HTML)
+                          </a>
+                        </div>
+
+                        {% if compra.comprobante_pago %}
+                          <p class="mt-2"><i class="ri-check-line text-success"></i> Comprobante subido. Esperando validación.</p>
+                        {% else %}
+                          <form method="POST" enctype="multipart/form-data" class="mt-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="compra_id" value="{{ compra.idCompra }}">
+                            <div class="mb-2 text-start">
+                              <label for="comprobante-{{ compra.idCompra }}" class="form-label">Sube tu comprobante de pago:</label>
+                              <input type="file" name="comprobante_pago" id="comprobante-{{ compra.idCompra }}" class="form-control" accept="image/*" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Enviar Comprobante</button>
+                          </form>
+                        {% endif %}
+
+                      {% endif %}
+                    {% endif %}
+                  </p>
+
+                  {% if compra.nCantidad > 1 %}
+                    <p class="text-danger mt-2"><strong>Nota:</strong> Esta compra incluye múltiples entradas. No se activa automáticamente en tu cuenta. Si deseas usar una, debes canjear un código de los enviados por correo.</p>
+                  {% endif %}
+                  <span class="badge bg-success">Comprada directamente</span>
+                </div>
+                <br>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="card mt-4">
+            <div class="card-body p-4 text-center">
+              <h5 class="text-primary">Entradas Canjeadas</h5>
+              {% if codigos_canjeados %}
+              <div class="list-group">
+                {% for codigo in codigos_canjeados %}
+                <div class="list-group-item">
+                  <h5>{{ codigo.compra.entrada.aNombre }}</h5>
+                  <p><strong>Evento:</strong> {{ codigo.compra.entrada.idEvento.aNombre }}</p>
+                  <span class="badge bg-warning text-dark">Canjeado con código: {{ codigo.codigo }}</span>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+{% block footer %}
+  {% include "web/layouts/footer.html" %}
+{% endblock footer %}
+{% endblock content %}
+
+{% block scripts %}
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+{% for message in messages %}
+  {% if message.tags == 'success' %}
+    <script>
+      Swal.fire({
+        icon: 'success',
+        iconColor: '#0ab39c',
+        title: "{{ message }}",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+</script>
+  {% elif message.tags == 'error' %}
+    <script>
+      Swal.fire({
+        icon: 'error',
+        title: "{{ message }}",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+</script>
+  {% endif %}
+{% endfor %}
+{% endblock scripts %}

@@ -1,0 +1,285 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Entradas{% endblock title %}
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Entradas" title="Compras" %}
+            {% endblock pagetitle %}
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" id="enterList">
+                        <div class="card-header border-0">
+                            <div class="row align-items-center gy-3">
+                                <div class="col-sm">
+                                    <h5 class="card-title mb-0">Compras Registradas de Entradas</h5>
+                                </div>
+                                <div class="col-sm-auto">
+                                    <div class="d-flex gap-1 flex-wrap">
+                                         
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body border border-dashed border-end-0 border-start-0">
+                            <form method="get" class="row g-3 mb-3">
+                                <div class="d-flex flex-wrap align-items-end gap-3">
+                                    <div class="flex-grow-1">
+                                        <div class="search-box">
+                                            <input type="text" name="q" class="form-control" placeholder="Buscar por nombre, apellido o correo..." value="{{ q|default_if_none:'' }}">
+                                            <i class="ri-search-line search-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="text-muted">Método de pago: </span>
+                                            <select name="metodo_pago" class="form-control mb-0" data-choices data-choices-search-false>
+                                                <option value="">Todos los métodos</option>
+                                                <option value="paypal" {% if metodo_pago == 'paypal' %}selected{% endif %}>PayPal</option>
+                                                <option value="stripe" {% if metodo_pago == 'stripe' %}selected{% endif %}>Tarjeta</option>
+                                                <option value="gratuito_cuponado" {% if metodo_pago == 'gratuito_cuponado' %}selected{% endif %}>Cuponado</option>
+                                                <option value="efectivo" {% if metodo_pago == 'efectivo' %}selected{% endif %}>Efectivo</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="text-muted">Evento: </span>
+                                            <select name="evento" class="form-control mb-0" data-choices data-choices-search-false id="evento-select">
+                                                <option value="">Todos los eventos</option>
+                                                {% for evento in eventos %}
+                                                    <option value="{{ evento.idEvento }}" {% if evento_id == evento.idEvento|stringformat:"s" %}selected{% endif %}>{{ evento.aNombre }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="text-muted">Entrada: </span>  
+                                            <select name="entrada" class="form-control mb-0" data-choices data-choices-search-false id="entrada-select" {% if not evento_id %}disabled{% endif %}>
+                                                <option value="">Todas las entradas</option>
+                                                {% for entrada in entradas %}
+                                                    {% if not evento_id or entrada.idEvento.idEvento|stringformat:"s" == evento_id %}
+                                                        <option value="{{ entrada.idEntrada }}" {% if entrada_id == entrada.idEntrada|stringformat:"s" %}selected{% endif %}>{{ entrada.aNombre }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <button type="submit" class="btn btn-primary w-100"><i class="ri-filter-line"></i></button>
+                                    </div>
+                                </div>    
+                            </form>
+                        </div>
+                        
+                        <br>
+                        <div class="card-body pt-0">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div id="table-counter" class="text-muted small" aria-live="polite">
+                                        Mostrando 0–0 de 0 registros
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="table-responsive table-card mb-1">
+                                    <table class="table table-nowrap align-middle" id="orderTable">
+                                        <thead class="text-muted table-light">
+                                            <tr class="text-uppercase fs-13">
+                                                <th class="sort" data-sort="name">Nombre</th>
+                                                <th class="sort" data-sort="lastname">Apellido/s</th>
+                                                <th class="sort" data-sort="email">Correo</th>
+                                                <th class="sort" data-sort="event">Evento</th>
+                                                <th class="sort" data-sort="enter">Entrada</th>
+                                                <th class="sort" data-sort="method">Método</th>
+                                                <th class="sort" data-sort="amount">Monto</th>
+                                                <th class="sort" data-sort="status">Estado</th>
+                                                <th class="sort" data-sort="date">Fecha</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="list form-check-all">
+                                            {% for compra in compras %}
+                                            <tr>
+                                                <td class="name">{{ compra.usuario.aNombre }}</td>
+                                                <td class="lastname">{{ compra.usuario.aApellido }}</td>
+                                                <td class="email">{{ compra.usuario.email }}</td>
+                                                <td class="event">{{ compra.entrada.idEvento.aNombre }}</td>
+                                                <td class="enter">{{ compra.entrada.aNombre }}</td>
+                                                <td class="method">{{ compra.get_metodo_pago_display }}</td>
+                                                <td class="amount">${{ compra.monto_pago }}</td>
+                                                <td class="status">
+                                                    {% if compra.status_pago == 'pendiente' %}
+                                                    <span class="badge bg-warning text-uppercase">Pendiente</span>
+                                                    {% else %}
+                                                    <span class="badge bg-success text-uppercase">Pagado</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="date">{{ compra.fecha_compra|date:"d/m/Y H:i" }}</td>
+                                                
+                                            </tr>
+                                            {% empty %}
+                                                {% if q or evento_id or entrada_id %}
+                                                <script>
+                                                    document.addEventListener('DOMContentLoaded', function () {
+                                                        document.querySelector('.noresult').style.display = 'block';
+                                                    });
+</script>
+                                                {% else %}
+                                                <tr>
+                                                    <td colspan="8" class="text-center">No hay compras registradas.</td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <div class="noresult" style="display: none">
+                                        <div class="text-center">
+                                            <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:75px;height:75px"></lord-icon>
+                                            <h5 class="mt-2">¡No encontramos ningún resultado!</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <div class="pagination-wrap hstack gap-2">
+                                        <a class="page-item pagination-prev disabled" href="#">
+                                            Anterior
+                                        </a>
+                                        <ul class="pagination listjs-pagination mb-0"></ul>
+                                        <a class="page-item pagination-next" href="#">
+                                            Siguiente
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% block footer %}
+    {% include "partials/footer.html" %}
+    {% endblock footer %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'libs/list.js/dist/list.min.js'%}"></script>
+<script src="{% static 'libs/list.pagination.js/dist/list.pagination.min.js'%}"></script>
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'error',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+<script>
+    var options = {
+        valueNames: ['name', 'lastname', 'email', 'event', 'enter', 'method', 'amount', 'status', 'date'],
+        page: 10,
+        pagination: true
+    };
+
+    var enterList = new List('enterList', options);
+
+    function renderCounter(list) {
+        const el = document.getElementById('table-counter');
+        if (!el) return;
+
+        const total = list.matchingItems ? list.matchingItems.length : list.size();
+
+        let start = 0, end = 0;
+        if (total > 0) {
+
+            start = list.i;
+            end = list.i + list.visibleItems.length - 1;
+        }
+
+        const sufijo = (total === 1) ? 'registro' : 'registros';
+        el.textContent = `Mostrando ${start}–${end} de ${total} ${sufijo}`;
+    }
+
+    function togglePaginationControls() {
+        const paginationContainer = document.querySelector('.pagination-wrap');
+        const totalItems = enterList.matchingItems ? enterList.matchingItems.length : enterList.size();
+        const itemsPerPage = enterList.page;
+
+        if (totalItems <= itemsPerPage) {
+            paginationContainer.style.display = 'none';
+        } else {
+            paginationContainer.style.display = 'flex';
+        }
+    }
+
+    renderCounter(enterList);
+    togglePaginationControls();
+
+    enterList.on('updated', function (list) {
+        renderCounter(list);
+        togglePaginationControls();
+    });</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const eventoSelect = document.getElementById("evento-select");
+        const actividadSelect = document.getElementById("actividad-select");
+
+        eventoSelect.addEventListener("change", function () {
+            actividadSelect.disabled = !eventoSelect.value;
+        });
+    });</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const eventoSelect = document.getElementById("evento-select");
+        const entradaSelect = document.getElementById("entrada-select");
+
+        eventoSelect.addEventListener("change", function () {
+            entradaSelect.innerHTML = '<option value="">Todas las entradas</option>';
+
+            if (!this.value) {
+                entradaSelect.disabled = true;
+                return;
+            }
+
+            fetch(`/entradas/ajax/entradas-por-evento/?evento_id=${this.value}`)
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(ent => {
+                        const opt = document.createElement("option");
+                        opt.value = ent.idEntrada;
+                        opt.textContent = ent.aNombre;
+                        entradaSelect.appendChild(opt);
+                    });
+                    entradaSelect.disabled = false;
+                });
+        });
+
+        if (eventoSelect.value) {
+            eventoSelect.dispatchEvent(new Event('change'));
+        }
+    });</script>
+{% endblock %}

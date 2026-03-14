@@ -1,0 +1,227 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}Enviar Notificación{% endblock %}
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Enviar Notificación</h4>
+                            {% if notificacion.estado == 'programada' %}
+                            <div class="alert alert-info">
+                                <strong>Estado:</strong> Esta notificación está programada para enviarse el {{ notificacion.fecha_programada|date:'d/m/Y H:i' }}
+                                <a href="{% url 'cancelar_notificacion_programada' notificacion.id %}" class="btn btn-sm btn-outline-danger ms-2">Cancelar Programación</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <form method="post" id="enviarNotificacionForm">
+                                {% csrf_token %}
+                                
+                                <input type="hidden" name="modo_envio" id="modo_envio" value="push" />
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Título</label>
+                                        <input type="text" class="form-control" value="{{ notificacion.titulo }}" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Fecha de Creación</label>
+                                        <input type="text" class="form-control" value="{{ notificacion.fecha_creacion|date:'d/m/Y H:i' }}" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label class="form-label">Mensaje</label>
+                                        <textarea class="form-control" rows="4" readonly>{{ notificacion.mensaje }}</textarea>
+                                    </div>
+                                </div>
+
+                                {% if notificacion.imagen %}
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label class="form-label">Imagen</label>
+                                        <div class="text-center">
+                                            <img src="{{ notificacion.imagen.url }}" alt="Imagen de la notificación" class="img-fluid rounded" style="max-height: 200px;">
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if notificacion.datos_adicionales %}
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label class="form-label">Datos Adicionales</label>
+                                        <pre class="form-control" style="min-height: 100px;">{{ notificacion.datos_adicionales|pprint }}</pre>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Enviar a</label>
+                                        <select class="form-select" name="destinatarios" required>
+                                            <option value="">Selecciona los destinatarios</option>
+                                            <option value="todos">Todos los usuarios</option>
+                                            <option value="clientes">Clientes</option>
+                                            <option value="administradores">Administradores</option>
+                                            <option value="desayunos">Registrados a Desayunos</option>
+                                            <option value="cursos">Registrados a Cursos</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="id_fecha_programada">Fecha y Hora de Envío (opcional)</label>
+                                        <input type="datetime-local" class="form-control" name="fecha_programada" id="fecha_programada">
+                                        <small class="text-muted">Si no se especifica, la notificación se enviará inmediatamente.</small>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12 text-end">
+                                        <a href="{% url 'listado_notificaciones' %}" class="btn btn-light me-2">Cancelar</a>
+
+                                        <button type="submit" class="btn btn-secondary me-2" data-modo="email">
+                                            <i class="fas fa-envelope me-1"></i>
+                                            Enviar por Email
+                                        </button>
+
+                                        <button type="submit" class="btn btn-primary" data-modo="push">
+                                            <i class="fas fa-paper-plane me-1"></i>
+                                            Enviar por Notificación
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: "{{ message|escapejs }}",
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: "{{ message|escapejs }}",
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+
+<script>
+(function() {
+
+    const fechaInput = document.getElementById('fecha_programada');
+    if (fechaInput) {
+        const now = new Date();
+        const mx = new Date(now.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+        const y = mx.getFullYear();
+        const m = String(mx.getMonth() + 1).padStart(2, '0');
+        const d = String(mx.getDate()).padStart(2, '0');
+        const hh = String(mx.getHours()).padStart(2, '0');
+        const mm = String(mx.getMinutes()).padStart(2, '0');
+        fechaInput.setAttribute('min', `${y}-${m}-${d}T${hh}:${mm}`);
+    }
+
+    const form = document.getElementById('enviarNotificacionForm');
+    if (!form) return;
+
+    const inputModo = document.getElementById('modo_envio');
+    const btnEmail = form.querySelector('button[data-modo="email"]');
+    const btnPush  = form.querySelector('button[data-modo="push"]');
+
+    let lastClickMode = 'push';
+
+    if (btnEmail) {
+        btnEmail.addEventListener('click', function() {
+            lastClickMode = 'email';
+            if (inputModo) inputModo.value = 'email';
+        });
+    }
+    if (btnPush) {
+        btnPush.addEventListener('click', function() {
+            lastClickMode = 'push';
+            if (inputModo) inputModo.value = 'push';
+        });
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const submitter = e.submitter || document.activeElement;
+        const modo = (submitter && submitter.dataset && submitter.dataset.modo) || lastClickMode || 'push';
+        if (inputModo) inputModo.value = modo;
+
+        const destinatarios = form.querySelector('[name="destinatarios"]')?.value || '';
+        const fechaProgramada = form.querySelector('[name="fecha_programada"]')?.value || '';
+
+        if (!destinatarios) {
+            Swal.fire({ title: 'Error', text: 'Debes seleccionar los destinatarios', icon: 'error' });
+            return;
+        }
+
+        let base = (modo === 'email') ? 'El email se enviará' : 'La notificación push se enviará';
+        let mensaje = base + ' inmediatamente';
+
+        if (fechaProgramada && modo === 'push') {
+            const f = new Date(fechaProgramada);
+            mensaje = base + ` programada el ${f.toLocaleString('es-MX', {
+                year:'numeric', month:'2-digit', day:'2-digit',
+                hour:'2-digit', minute:'2-digit', timeZone:'America/Mexico_City'
+            })}`;
+        } else if (fechaProgramada && modo === 'email') {
+
+            mensaje = base + ' inmediatamente (la fecha programada no aplica para email).';
+        }
+
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: mensaje,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: (modo === 'email') ? 'Sí, enviar email' : (fechaProgramada ? 'Sí, programar' : 'Sí, enviar ahora'),
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: (modo === 'email') ? 'Enviando emails...' : (fechaProgramada ? 'Programando notificación...' : 'Enviando notificación...'),
+                    text: 'Por favor espera',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                form.submit();
+            }
+        });
+    });
+})();</script>
+{% endblock %}

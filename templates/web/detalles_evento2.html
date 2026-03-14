@@ -1,0 +1,767 @@
+{% extends "web/layouts/base.html" %}
+{% load static %}
+{% block title %}Inicio{% endblock title %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<style>
+    .small-text {
+        font-size: 14px;
+        line-height: 1.4;
+        opacity: 0.9;
+    }
+    
+    .slider-item{
+    background-size: cover;
+    background-position: center;
+    }
+
+    .slider-content h1,
+    .slider-content h2,
+    .slider-content .small-text{
+    color:#fff;
+    text-shadow:
+        -1px -1px 0 #000, 1px -1px 0 #000,
+        -1px  1px 0 #000, 1px  1px 0 #000;
+    }
+
+    .small-text{
+    font-size:14px;
+    line-height:1.4;
+    opacity:.9;
+    }
+
+    .slider-content-area,
+    .slider-content{
+    overflow: visible;
+    width: 100%;
+    box-sizing: border-box;
+    }
+
+    .fit-line{
+    max-width: min(1200px, 92%);
+    margin: .2em auto .35em;
+    text-align: center;
+    padding-inline: 16px; 
+    box-sizing: border-box;
+    }
+
+    .fit-line h1{
+    white-space: nowrap;      
+    display: inline-block;    
+    line-height: 1.1;
+    margin: 0;
+    font-size: 96px;          
+    }
+
+    @media (max-width: 768px){
+    .small-text{ font-size:12px; }
+    }
+    @media (max-width: 480px){
+    .small-text{ font-size:11px; }
+    }
+    
+    .slider-content h2.small-text{
+    font-size: 14px !important;        
+    line-height: 1.35;
+    font-weight: 500;                   
+    letter-spacing: 0 !important;       
+    text-transform: none !important;    
+    opacity: .95;
+
+    max-width: min(1100px, 92%);
+    margin: 0.25rem auto 0.5rem;
+    padding: 0 16px;
+    box-sizing: border-box;
+    text-align: center;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+    }
+
+    @media (max-width: 768px){
+    .slider-content h2.small-text{ font-size: 12px !important; }
+    }
+    @media (max-width: 480px){
+    .slider-content h2.small-text{ font-size: 11px !important; }
+    }
+
+</style>
+<style>
+  
+  .sponsor-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; 
+    gap: 12px 16px;          
+  }
+
+  .sponsor-grid a {
+    display: block;
+    padding: 4px;            
+  }
+
+  .sponsor-grid img {
+    width: 370px;
+    height: 150px;
+    object-fit: contain;
+    display: block;
+    background: #fff;        
+    border-radius: 6px;      
+  }
+</style>
+
+{% endblock extra_css %}
+
+{% block content %}
+    <div class="item active">
+        <div class="slider-item" style="background-image: url('{{ evento.aImagen.url }}'); background-size: cover; background-position: center;">
+            <div class="slider-content-area">
+                <div class="container">
+                    <div class="row">
+                        <div class="slider-content">
+                            <h2 class="small-text">
+                                <span class="flaticon-signs"></span>
+                                {{ evento.dCalle }} {{ evento.dNumero }}, {{ evento.dColonia }}, {{ evento.dCP }}, {{ evento.dCiudad }}, {{ evento.dEstado }}.
+                            </h2>
+                            <div class="fit-line">
+                                <h1 data-fit="one-line" data-fit-min="14" data-fit-max="96" data-fit-pad="18">
+                                    {{ evento.aNombre }}
+                                </h1>
+                            </div>
+                            <h2><span class="flaticon-tool"></span>{{ fecha_formateada }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <section class="speakers speakers-eight padding-120">
+        <div class="container">
+            <div class="section-header text-center">
+                <h3>Acerca de {{ evento.aNombre }}</h3>
+                <p>
+                    <em>{{ evento.aDescripcion }}</em>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    {% if expositores %}
+    <section class="speakers speakers-eight padding-120">
+        <div class="container">
+            <div class="section-header text-center">
+            <h3>Nuestros conferencistas</h3>
+            </div>
+
+            <div class="speaker-items">
+            <div class="row">
+                {% for expositor in expositores %}
+                <div class="col-md-6 col-lg-6">
+                <div class="speaker-item">
+                    <div class="speaker-image">
+                    {% if expositor.aFoto %}
+                        <img src="{{ expositor.aFoto.url }}"
+                            alt="{{ expositor.aNombre }} {{ expositor.aApellido }}"
+                            class="img-responsive"
+                            loading="lazy">
+                    {% else %}
+                        <img src="{% static 'images/speakers/speaker_01.jpg' %}"
+                            alt="{{ expositor.aNombre }} {{ expositor.aApellido }}"
+                            class="img-responsive"
+                            loading="lazy">
+                    {% endif %}
+                    </div>
+
+                    <div class="speaker-content">
+                    <div class="content">
+                        <h4>
+                        <a href="{% url 'expositor_detalles' expositor.idExpositor %}">
+                            {{ expositor.aNombre }} {{ expositor.aApellido }}
+                        </a>
+                        <span>
+                            {% if expositor.aPuesto %}{{ expositor.aPuesto }}{% else %}Conferencista{% endif %}
+                        </span>
+                        </h4>
+
+                        {% if expositor.aDescripcion %}
+                        <p>{{ expositor.aDescripcion|truncatechars:180 }}</p>
+                        {% endif %}
+
+                        <ul class="speaker-social">
+                        {% if expositor.aFacebook %}
+                        <li><a href="{{ expositor.aFacebook }}" target="_blank" rel="noopener noreferrer">
+                            <i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+                        {% endif %}
+                        {% if expositor.aTwitter %}
+                        <li><a href="{{ expositor.aTwitter }}" target="_blank" rel="noopener noreferrer">
+                            <i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+                        {% endif %}
+                        {% if expositor.aInstagram %}
+                        <li><a href="{{ expositor.aInstagram }}" target="_blank" rel="noopener noreferrer">
+                            <i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+                        {% endif %}
+                        {% if expositor.aSitioWeb %}
+                        <li><a href="{{ expositor.aSitioWeb }}" target="_blank" rel="noopener noreferrer">
+                            <i class="fa fa-globe" aria-hidden="true"></i></a></li>
+                        {% endif %}
+                        {% if expositor.aEmail %}
+                        <li><a href="mailto:{{ expositor.aEmail }}">
+                            <i class="fa fa-envelope" aria-hidden="true"></i></a></li>
+                        {% endif %}
+                        </ul>
+                    </div>
+                    </div>
+                </div>
+                </div>
+                {% endfor %}
+            </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if agendas %}
+    {% if evento.lAgendaVisible or request.user.is_authenticated %}
+    <section id="schedules" class="schedules schedules-uhv">
+    <div class="overlay padding-120">
+        <div class="container">
+        <div class="section-header text-center">
+            <h3>Programación del Evento</h3>
+        </div>
+
+        {% for agenda in agendas %}
+        <div class="schedule-tabs mb-5">
+            <h4 class="mb-3">{{ agenda.agenda }}</h4>
+
+            <ul class="nav nav-tabs" role="tablist" id="myTab-{{ forloop.counter }}">
+            {% for fecha, actividades in agenda.dias.items %}
+            <li class="nav-item" role="presentation">
+                <a
+                {% if forloop.first %}class="active"{% endif %}
+                href="#a{{ forloop.parentloop.counter }}-d{{ forloop.counter }}"
+                data-bs-toggle="tab"
+                data-bs-target="#a{{ forloop.parentloop.counter }}-d{{ forloop.counter }}"
+                type="button" role="tab"
+                aria-controls="a{{ forloop.parentloop.counter }}-d{{ forloop.counter }}"
+                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                Día-{{ forloop.counter }}
+                <span>{{ fecha }}</span>
+                </a>
+            </li>
+            {% endfor %}
+            </ul>
+
+            <div class="tab-content" id="myTabContent-{{ forloop.counter }}">
+            {% for fecha, actividades in agenda.dias.items %}
+            <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %}" id="a{{ forloop.parentloop.counter }}-d{{ forloop.counter }}">
+                <div class="schedule-list row">
+
+                {% for actividad in actividades %}
+                <div class="col-lg-6">
+                    <div class="schedule-item">
+                    <div class="schedule-speader">
+                        {% if actividad.expositor_foto %}
+                        <img src="{{ actividad.expositor_foto.url }}"
+                            alt="Foto de {{ actividad.expositor|default:'Encargado' }}"
+                            loading="lazy">
+                        {% else %}
+                        <img src="https://cdn-icons-png.flaticon.com/512/8291/8291179.png"
+                            alt="Imagen actividad"
+                            loading="lazy">
+                        {% endif %}
+                    </div>
+
+                    <div class="schedule-content">
+                        <div class="schedule-heading">
+                        <span class="time pull-left">
+                            <i class="fa fa-clock-o" aria-hidden="true"></i>
+                            {{ actividad.hora }}
+                        </span>
+
+                        <span class="hall pull-right"
+                            {% if actividad.latitud and actividad.longitud %}
+                            onclick="redirectToGoogleMaps2({{ actividad.latitud }}, {{ actividad.longitud }})"
+                            style="cursor:pointer"
+                            {% endif %}>
+                            <i class="fa fa-home" aria-hidden="true"></i>
+                            {{ actividad.lugar }}
+                        </span>
+                        </div>
+
+                        <h6 class="session">
+                        <a href="#"
+                            class="actividad-link"
+                            data-actividad-id="{{ actividad.id }}">
+                            {{ actividad.nombre }}
+                        </a>
+                        </h6>
+
+                        {% if actividad.expositor %}
+                        <span class="speaker-name">
+                            Por <a href="#">{{ actividad.expositor }}</a>
+                        </span>
+                        {% endif %}
+
+                        <div class="mt-2">
+                        {% if not evento_terminado %}
+                            {% if actividad.boton == "Comprar pase" %}
+                            <a href="{% url 'pago_actividad' actividad.id %}" class="btn btn-primary btn-sm">Comprar pase</a>
+                            {% elif actividad.boton == "Registrarse" %}
+                            <a href="{% url 'registro_acompañantes_actividad' actividad.id %}" class="btn btn-success btn-sm">Registrarse</a>
+                            {% elif actividad.boton == "Editar acompañantes" %}
+                            <a href="{% url 'editar_acompañantes' actividad.id %}" class="btn btn-warning btn-sm">Editar acompañantes</a>
+                            {% elif actividad.boton == "Ya registrado" %}
+                            <span class="badge bg-warning text-dark">Ya estás registrado</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-secondary">Este evento ya finalizó</span>
+                        {% endif %}
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-muted">No hay actividades para este día.</p>
+                </div>
+                {% endfor %}
+
+                </div>
+            </div>
+            {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        </div>
+    </div>
+    </section>
+    {% endif %}
+    {% endif %}
+
+    {% if entradas %}
+    <section class="pricing pricing-uhv padding-120">
+    <div class="container">
+        <div class="section-header text-center">
+        <h3>Precios</h3>
+        </div>
+
+        <div class="pricing-items">
+        <div class="row">
+            {% for entrada in entradas %}
+            <div class="col-lg-4 col-md-6 col-xs-12">
+            <div class="pricing-item">
+                <div class="pricing-header">
+                <h3 class="name">{{ entrada.aNombre }}</h3>
+
+                {% if entrada.is_preregistro %}
+                    <h2 class="amount">
+                    <span class="h5 d-block">Pre-registro</span>
+                    <span class="small text-muted">Sin costo</span>
+                    </h2>
+                {% else %}
+                    <h2 class="amount"><sup>$</sup>{{ entrada.nCosto }}</h2>
+                {% endif %}
+                </div>
+
+                <div class="pricing-options">
+                {% if entrada.is_preregistro %}
+                    <p><span><i class="fa fa-info-circle" aria-hidden="true"></i></span>
+                    <strong>Pre-regístrate</strong> y recibe recordatorios y novedades.
+                    </p>
+                    <p><span><i class="fa fa-check" aria-hidden="true"></i></span> Sin costo y sin compromiso.</p>
+                    <p><span><i class="fa fa-check" aria-hidden="true"></i></span> Te avisamos 3 días antes del evento.</p>
+                    <p><span><i class="fa fa-check" aria-hidden="true"></i></span> Para asistir, deberás comprar una entrada.</p>
+                {% else %}
+                    {% if entrada.actividades %}
+                    {% for actividad in entrada.actividades %}
+                        <p><span><i class="fa fa-check" aria-hidden="true"></i></span> {{ actividad.aNombre }}</p>
+                    {% endfor %}
+                    {% else %}
+                    <p><em>Incluye acceso al evento.</em></p>
+                    {% endif %}
+                {% endif %}
+                </div>
+
+                <div class="pricing-button">
+                {% if entrada.is_preregistro %}
+                    {% if not evento_terminado %}
+                    {% if not request.user.is_authenticated %}
+                        <a href="{% url 'login' %}?next={{ preregistro_url|urlencode }}">Pre-regístrate</a>
+                    {% else %}
+                        {% if estado_registro == 'pre-registro' %}
+                        <a class="disabled">Ya estás pre-registrado</a>
+                        {% elif estado_registro %}
+                        <a class="disabled">Ya estás registrado</a>
+                        {% else %}
+                        <a href="{{ preregistro_url }}">Pre-regístrate</a>
+                        {% endif %}
+                    {% endif %}
+                    {% else %}
+                    <a>Este evento ya finalizó</a>
+                    {% endif %}
+                {% else %}
+                    {% if not evento_terminado %}
+                    {% if entrada.nCosto > 0 and entrada.idEntrada %}
+                        <a href="{% url 'pago_entrada' entrada.idEntrada %}">Compra ahora</a>
+                    {% elif entrada.nCosto == 0 %}
+                        {% if entrada.idEntrada %}
+                        <a href="{% url 'registro_gratuito' entrada.idEntrada %}">Regístrate ahora</a>
+                        {% else %}
+                        <a href="{% url 'registro_gratuito_evento' evento.idEvento %}">Regístrate ahora</a>
+                        {% endif %}
+                    {% endif %}
+                    {% else %}
+                    <a>Este evento ya finalizó</a>
+                    {% endif %}
+                {% endif %}
+                </div>
+                
+            </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        </div>
+        
+    </div>
+    
+    </section>
+    {% endif %}
+
+    {% if patrocinadores %}
+    <section class="sponsor">
+    <div class="overlay">
+        <div class="container">
+        <div class="section-header text-center">
+            <h3>Nuestros patrocinadores</h3>
+        </div>
+        <div class="sponsor-grid">
+            {% for patrocinador in patrocinadores %}
+            <a href="{% url 'patrocinador_detalles' patrocinador.idPatrocinador %}">
+                <img src="{{ patrocinador.aFoto.url }}" alt="Patrocinador">
+            </a>
+            {% endfor %}
+        </div>
+        </div>
+    </div>
+    </section>
+    {% endif %}
+
+    {% if stands %}
+    <section id="sponsor" class="sponsor sponsor-uhv event-sponsor-page padding-120">
+    <div class="container">
+        <div class="section-header text-center">
+        <h3>Nuestros stands</h3>
+        </div>
+        <div class="sponsor-grid">
+        {% for stand in stands %}
+            <a href="{% url 'stand_detalles' stand.idStand %}">
+            <img src="{{ stand.aImagen.url }}" alt="Stand">
+            </a>
+        {% endfor %}
+        </div>
+    </div>
+    </section>
+    {% endif %}
+
+    <section id="map" class="home-map">
+        <div id="home-map" class="map"></div>
+    </section>
+
+    <div class="modal fade"
+         id="actividadModal"
+         tabindex="-1"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="actividadModalLabel">Detalles de la actividad</h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="actividadModalBody">
+                        <div class="text-center py-5">Cargando...</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a id="actividadCta" class="btn btn-primary d-none" href="#"></a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+            <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: m,
+            showConfirmButton: false,
+            timer: 4500,
+        });
+</script>
+        {% elif message.tags == 'error' %}
+            <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'error',
+            title: m,
+            showConfirmButton: false,
+            timer: 4500,
+        });
+</script>
+        {% endif %}
+    {% endfor %}
+    {% block footer %}
+        {% include "web/layouts/footer.html" %}
+    {% endblock footer %}
+{% endblock content %}
+{% block extra_js %}
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="{% static 'js/maps.js' %}"></script>
+{% endblock extra_js %}
+{% block scripts %}
+    <script type="text/javascript">
+        var eventLatitude = parseFloat("{{ evento.dLatitud|stringformat:".6f" }}");
+        var eventLongitude = parseFloat("{{ evento.dLongitud|stringformat:".6f" }}");
+
+        var map = L.map('home-map').setView([eventLatitude, eventLongitude], 15);
+
+        addTiles(map);
+
+        var marker = L.marker([eventLatitude, eventLongitude]).addTo(map);
+
+        function redirectToGoogleMaps(lat, lng) {
+            var url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+            window.open(url, '_blank');
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var userLat = position.coords.latitude;
+                var userLng = position.coords.longitude;
+
+                map.on('click', function() {
+                    redirectToGoogleMaps(eventLatitude, eventLongitude);
+                });
+
+            }, function(error) {
+                map.on('click', function() {
+                    redirectToGoogleMaps(eventLatitude, eventLongitude);
+                });
+            });
+        } else {
+            map.on('click', function() {
+                redirectToGoogleMaps(eventLatitude, eventLongitude);
+            });
+        }
+</script>
+    <script type="text/javascript">
+
+        function redirectToGoogleMaps2(lat, lng) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        var userLat = position.coords.latitude;
+                        var userLng = position.coords.longitude;
+                        var url = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${lat},${lng}&travelmode=driving`;
+                        window.open(url, '_blank');
+                    },
+                    function(error) {
+
+                        var url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+                        window.open(url, '_blank');
+                    }
+                );
+            } else {
+
+                var url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+                window.open(url, '_blank');
+            }
+        }
+</script>
+    <script type="text/javascript">
+document.addEventListener('click', function (e) {
+  const link = e.target.closest('.actividad-link');
+  if (!link) return;
+
+  e.preventDefault();
+
+  const id = link.dataset.actividadId;
+  const modalEl = document.getElementById('actividadModal');
+  const bodyEl  = document.getElementById('actividadModalBody');
+  const ctaEl   = document.getElementById('actividadCta');
+
+  bodyEl.innerHTML = '<div class="text-center py-5">Cargando...</div>';
+  ctaEl.classList.add('d-none');
+  ctaEl.removeAttribute('href');
+  ctaEl.classList.remove('disabled');
+
+  const baseFromData = link.dataset.apiUrl;
+  const baseFromDjango = "{% url 'actividad_detalles_api' 0 %}";
+  const base = baseFromData || baseFromDjango;
+  const url = base.replace(/0\/?$/, `${id}/`);
+
+  fetch(url, { credentials: 'same-origin' })
+    .then(r => {
+      if (!r.ok) throw new Error('Error ' + r.status);
+      return r.json();
+    })
+    .then(data => {
+      const partes = [];
+
+      partes.push(`<h4 class="mb-1">${data.nombre}</h4>`);
+      if (data.tipo) partes.push(`<div class="text-muted mb-2">${data.tipo}</div>`);
+      partes.push(`<p>${data.descripcion ? data.descripcion : 'Sin descripción.'}</p>`);
+
+      const disponiblesBadge = (Number(data.disponibles) > 0)
+        ? `<span class="badge bg-success">${data.disponibles} disponibles</span>`
+        : `<span class="badge bg-danger">0 disponibles</span>`;
+
+      partes.push(`
+        <div class="row g-3 mb-2">
+          <div class="col-6"><strong>Fecha:</strong> ${data.fecha || '-'}</div>
+          <div class="col-6"><strong>Hora:</strong> ${data.hora || '-'}</div>
+          <div class="col-6"><strong>Costo:</strong> $${data.costo}</div>
+          <div class="col-6">
+            <strong>Capacidad:</strong> ${data.capacidad}
+            &nbsp;${disponiblesBadge}
+          </div>
+          <div class="col-12"><strong>Lugar:</strong> ${data.lugar}</div>
+        </div>
+      `);
+
+      if (data.expositores && data.expositores.length) {
+        const cards = data.expositores.map(e => `
+          <div class="d-flex align-items-center gap-3 py-2">
+            ${e.foto ? `<img src="${e.foto}" alt="${e.nombre}" class="rounded" style="width:56px;height:56px;object-fit:cover">` : ''}
+            <div>
+              <div class="fw-semibold">
+                ${e.perfil_url ? `<a href="${e.perfil_url}">${e.nombre}</a>` : e.nombre}
+              </div>
+              <div class="d-flex gap-2">
+                ${e.facebook ? `<a href="${e.facebook}" target="_blank"><i class="fa fa-facebook"></i></a>` : ''}
+                ${e.twitter ? `<a href="${e.twitter}" target="_blank"><i class="fa fa-twitter"></i></a>` : ''}
+                ${e.instagram ? `<a href="${e.instagram}" target="_blank"><i class="fa fa-instagram"></i></a>` : ''}
+                ${e.web ? `<a href="${e.web}" target="_blank"><i class="fa fa-globe"></i></a>` : ''}
+                ${e.email ? `<a href="mailto:${e.email}"><i class="fa fa-envelope"></i></a>` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('');
+        partes.push(`<hr><strong>Expositor(es):</strong>${cards}`);
+      }
+
+      if (data.maps_url) {
+        partes.push(`<div class="mt-3"><a href="${data.maps_url}" target="_blank" class="btn btn-outline-primary">Cómo llegar</a></div>`);
+      }
+
+      bodyEl.innerHTML = partes.join('');
+
+      if (!data.evento_terminado) {
+        if (data.cta === "Ya registrado") {
+          ctaEl.textContent = data.cta;
+          ctaEl.classList.remove('d-none');
+          ctaEl.classList.add('disabled');
+        } else if (data.cta && data.cta_url) {
+          ctaEl.textContent = data.cta;
+          ctaEl.href = data.cta_url;
+          ctaEl.classList.remove('d-none');
+        }
+      } else {
+        bodyEl.insertAdjacentHTML('beforeend', `<div class="alert alert-warning mt-3">Este evento ya finalizó.</div>`);
+      }
+    })
+    .catch(err => {
+      bodyEl.innerHTML = `<div class="alert alert-danger">No se pudo cargar la información (${err.message}).</div>`;
+    })
+    .finally(() => {
+
+      if (window.bootstrap && bootstrap.Modal) {
+        const instance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        instance.show();
+        return;
+      }
+      if (window.jQuery && typeof jQuery.fn.modal === 'function') {
+        jQuery('#actividadModal').modal('show');
+        return;
+      }
+
+      modalEl.classList.add('show');
+      modalEl.style.display = 'block';
+      modalEl.removeAttribute('aria-hidden');
+    });
+});
+</script>
+    <script>
+(function () {
+  function fitOneLine(el) {
+    const box = el.parentElement;
+    const min = parseFloat(el.dataset.fitMin || 14);
+    const max = parseFloat(el.dataset.fitMax || 96);
+    const pad = parseFloat(el.dataset.fitPad || 0);
+
+    const boxWidth = () => box.getBoundingClientRect().width - pad*2;
+    const textWidth = () => el.getBoundingClientRect().width;
+
+    el.style.letterSpacing = '';
+    el.style.fontSize = max + 'px';
+
+    if (textWidth() <= boxWidth()) return;
+
+    let lo = min, hi = max, best = min;
+    for (let i = 0; i < 25; i++) {
+      const mid = (lo + hi) / 2;
+      el.style.fontSize = mid + 'px';
+      if (textWidth() <= boxWidth()) { best = mid; lo = mid; }
+      else { hi = mid; }
+      if (Math.abs(hi - lo) < 0.25) break;
+    }
+    el.style.fontSize = Math.max(min, best) + 'px';
+
+    for (let n=0; n<3 && textWidth() > boxWidth(); n++) {
+      el.style.fontSize = (parseFloat(el.style.fontSize) - 0.5) + 'px';
+    }
+
+    if (textWidth() > boxWidth()) {
+      el.style.letterSpacing = '-0.02em';
+      if (textWidth() > boxWidth()) el.style.letterSpacing = '-0.04em';
+    }
+  }
+
+  function runAll() {
+    document.querySelectorAll('[data-fit="one-line"]').forEach(fitOneLine);
+  }
+
+  const debounced = (fn, ms) => {
+    let t; return () => { clearTimeout(t); t = setTimeout(fn, ms); };
+  };
+
+  if (document.readyState !== 'loading') runAll();
+  else document.addEventListener('DOMContentLoaded', runAll);
+
+  window.addEventListener('resize', debounced(runAll, 120));
+
+  if ('fonts' in document) {
+    document.fonts.ready.then(() => {
+      runAll();
+      setTimeout(runAll, 60);
+      setTimeout(runAll, 300);
+    });
+  } else {
+    window.addEventListener('load', () => {
+      runAll();
+      setTimeout(runAll, 60);
+      setTimeout(runAll, 300);
+    });
+  }
+})();</script>
+{% endblock scripts %}

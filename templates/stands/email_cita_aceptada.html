@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación de Compra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Imprima&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Imprima', Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            background: white;
+            margin: 30px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+        }
+        .header img {
+            width: 100px;
+        }
+        .content {
+            text-align: center;
+            padding: 20px;
+        }
+        .content h2 {
+            color: #2D3142;
+        }
+        .content p {
+            font-size: 16px;
+            color: #555;
+        }
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 15px 25px;
+            background-color: #7630f3;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #999;
+        }
+        .details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+            margin-top: 20px;
+        }
+        .details p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="https://eventos.anadicmexico.mx">
+                <img src="https://eventos.anadicmexico.mx/static/web/images/logoANADIC.png" alt="Logo">
+            </a>
+        </div>
+        <div class="content">
+            <h2>¡Tu cita ha sido aceptada!</h2>
+            <p>Hola {{ cita.idUsuario.aNombre }},</p>
+            <p>Tu cita con el stand <strong>{{ cita.idStand.aNombre }}</strong> ha sido <strong>aceptada</strong>.</p>
+            <p>Fecha y hora: <strong>{{ cita.fFechaHora|date:"d/m/Y H:i" }}</strong></p>
+
+            {% if cita.idStand.nCostoCita > 0 %}
+            <p>Esta cita tiene un costo de <strong>${{ cita.idStand.nCostoCita }} MXN</strong>. Para realizar el pago, haz clic en el siguiente enlace:</p>
+            <p><a href="{{ enlace_pago }}" class="button">Ir al Stand</a></p>
+            {% else %}
+            <p>La cita es gratuita. ¡Nos vemos pronto!</p>
+            {% endif %}
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 EVENTOS ANADICMX - Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

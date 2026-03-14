@@ -1,0 +1,123 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}Usuarios Registrados a Actividades{% endblock title %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Registros" title="Usuarios Registrados a Actividades" %}
+
+            <form method="get" class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <input type="text" name="q" class="form-control" placeholder="Buscar por nombre o correo..." value="{{ q|default_if_none:'' }}">
+                </div>
+                <div class="col-md-4">
+                    <select name="evento" class="form-select" id="evento-select">
+                        <option value="">Todos los eventos</option>
+                        {% for evento in eventos %}
+                            <option value="{{ evento.idEvento }}" {% if evento_id == evento.idEvento|stringformat:"s" %}selected{% endif %}>
+                                {{ evento.aNombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="actividad" class="form-select" id="actividad-select" disabled>
+                        <option value="">Todas las actividades</option>
+                    </select>                    
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100"><i class="ri-filter-line me-1"></i></button>
+                </div>
+            </form>
+
+            <div class="card">
+                <div class="card-body pt-0">
+                    <div class="table-responsive table-card mt-3">
+                        <table class="table table-nowrap align-middle">
+                            <thead class="text-muted table-light">
+                                <tr class="text-uppercase fs-13">
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                    <th>Evento</th>
+                                    <th>Actividad</th>
+                                    <th>Estado</th>
+                                    <th>Fecha de Registro</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for registro in registros %}
+                                <tr>
+                                    <td>{{ registro.usuario.aNombre }}</td>
+                                    <td>{{ registro.usuario.email }}</td>
+                                    <td>{{ registro.actividad.idEvento.aNombre }}</td>
+                                    <td>{{ registro.actividad.aNombre }}</td>
+                                    <td>
+                                        {% if registro.status == 'pendiente' %}
+                                            <span class="badge bg-warning text-uppercase">Registrado</span>
+                                        {% else %}
+                                            <span class="badge bg-success text-uppercase">Visitado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ registro.fRegistro|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No hay registros encontrados.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const eventoSelect = document.getElementById("evento-select");
+        const actividadSelect = document.getElementById("actividad-select");
+
+        eventoSelect.addEventListener("change", function () {
+            actividadSelect.disabled = !eventoSelect.value;
+        });
+    });</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const eventoSelect = document.getElementById("evento-select");
+        const actividadSelect = document.getElementById("actividad-select");
+
+        eventoSelect.addEventListener("change", function () {
+            const eventoId = this.value;
+            actividadSelect.innerHTML = '<option value="">Todas las actividades</option>';
+
+            if (!eventoId) {
+                actividadSelect.disabled = true;
+                return;
+            }
+
+            fetch(`/usuarios/ajax/actividades-por-evento/?evento_id=${eventoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(act => {
+                        const option = document.createElement("option");
+                        option.value = act.idActividad;
+                        option.textContent = act.aNombre;
+                        actividadSelect.appendChild(option);
+                    });
+                    actividadSelect.disabled = false;
+                });
+        });
+
+        if (eventoSelect.value) {
+            eventoSelect.dispatchEvent(new Event('change'));
+        }
+    });</script>
+
+{% endblock %}

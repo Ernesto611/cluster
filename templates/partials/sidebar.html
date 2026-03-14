@@ -1,0 +1,344 @@
+{% load static %}
+{% block sidebar %}
+        
+        <div class="app-menu navbar-menu">
+            
+            <div class="navbar-brand-box">
+                
+                <a href="" class="logo logo-dark">
+                    <span class="logo-sm">
+                        <img src="{% static 'images/logo-sm.png'%}" alt="" height="22">
+                    </span>
+                    <span class="logo-lg">
+                        <img src="{% static 'images/logo_cluster2-dark.png'%}" alt="" height="17">
+                    </span>
+                </a>
+                
+                <a href="" class="logo logo-light">
+                    <span class="logo-sm">
+                        <img src="{% static 'images/logo-sm.png'%}" alt="" height="22">
+                    </span>
+                    <span class="logo-lg">
+                        <img src="{% static 'images/logo_cluster2-light.png'%}" alt="" height="17">
+                    </span>
+                </a>
+                <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" id="vertical-hover">
+                    <i class="ri-record-circle-line"></i>
+                </button>
+            </div>
+
+            <div id="scrollbar">
+                <div class="container-fluid">
+                    
+                    <div id="two-column-menu">
+                    </div>
+                    <ul class="navbar-nav" id="navbar-nav">
+                        <li class="menu-title"><span data-key="t-menu">Menú</span></li>
+
+                        {% if permisos_categoria.todos or permisos_categoria.eventos or permisos_categoria.categorias_eventos or permisos_categoria.archivos_evento or permisos_categoria.registros_eventos %} 
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebarEventos" data-bs-toggle="collapse" role="button"
+                                    aria-expanded="false" aria-controls="sidebarEventos">
+                                    <i class="ri-calendar-event-line"></i>
+                                    <span data-key="t-eventos">Eventos</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarEventos">
+                                    <ul class="nav nav-sm flex-column">
+                                        {% if permisos_categoria.todos or permisos_categoria.eventos or permisos_categoria.archivos_evento %}
+                                        <li class="nav-item"><a href="{% url 'listado_eventos' %}" class="nav-link">Listar Eventos</a></li>
+                                        {% endif %}
+                                        {% if permisos_categoria.todos or permisos_categoria.categorias_eventos %}
+                                        <li class="nav-item"><a href="{% url 'listado_categorias_eventos' %}" class="nav-link">Listar Categorías</a></li>
+                                        {% endif %}
+                                        {% if permisos_categoria.todos or permisos_categoria.subcategorias_eventos %}
+                                        <li class="nav-item"><a href="{% url 'listado_subcategorias_eventos' %}" class="nav-link">Listar Subcategorías</a></li>
+                                        {% endif %}
+                                        {% if permisos_categoria.todos or permisos_categoria.registros_eventos %}
+                                        <li class="nav-item"><a href="{% url 'listar_registros_eventos' %}" class="nav-link">Usuarios Registrados</a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.actividades or permisos_categoria.tipos_actividades or permisos_categoria.registros_actividades %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebarActividades" data-bs-toggle="collapse" role="button"
+                                    aria-expanded="false" aria-controls="sidebarActividades">
+                                    <i class="ri-calendar-check-line"></i>
+                                    <span data-key="t-actividades">Actividades</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarActividades">
+                                    <ul class="nav nav-sm flex-column">
+                                        {% if permisos_categoria.todos or permisos_categoria.actividades %} 
+                                        <li class="nav-item"><a href="{% url 'listado_actividades' %}" class="nav-link">Listar Actividades</a></li>
+                                        {% endif %}
+                                        {% if permisos_categoria.todos or permisos_categoria.tipos_actividades %} 
+                                        <li class="nav-item"><a href="{% url 'listado_tipos_actividades' %}" class="nav-link">Tipos de Actividades</a></li>
+                                        {% endif %}
+                                        {% if permisos_categoria.todos or permisos_categoria.registros_actividades %} 
+                                        <li class="nav-item"><a href="{% url 'listar_registros_actividades' %}" class="nav-link">Usuarios Registrados</a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.agendas %} 
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebarAgendas" data-bs-toggle="collapse" role="button"
+                                    aria-expanded="false" aria-controls="sidebarAgendas">
+                                    <i class="ri-calendar-2-line"></i>
+                                    <span data-key="t-agendas">Agendas</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarAgendas">
+                                    <ul class="nav nav-sm flex-column">
+                                        <li class="nav-item"><a href="{% url 'listado_agendas' %}" class="nav-link">Listar Agendas</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.conferencistas or permisos_categoria.archivos_conferencista %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebarExpositores" data-bs-toggle="collapse" role="button"
+                                    aria-expanded="false" aria-controls="sidebarExpositores">
+                                    <i class="ri-user-3-line"></i>
+                                    <span data-key="t-expositores">Conferencistas</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarExpositores">
+                                    <ul class="nav nav-sm flex-column">
+                                        <li class="nav-item"><a href="{% url 'listado_expositores' %}" class="nav-link">Listar Conferencistas</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.stands or permisos_categoria.productos_stand or permisos_categoria.archivos_stand or permisos_categoria.registros_stands %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebarStands" data-bs-toggle="collapse" role="button"
+                                    aria-expanded="false" aria-controls="sidebarStands">
+                                    <i class="ri-store-3-line"></i>
+                                    <span data-key="t-stands">Stands</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarStands">
+                                    <ul class="nav nav-sm flex-column">
+                                        {% if permisos_categoria.todos or permisos_categoria.stands or permisos_categoria.productos_stand or permisos_categoria.archivos_stand %}
+                                        <li class="nav-item"><a href="{% url 'listado_stands' %}" class="nav-link">Listar Stands</a></li>
+                                        {% endif %}
+                                        {% if permisos_categoria.todos or permisos_categoria.registros_stands %}
+                                        <li class="nav-item"><a href="{% url 'listar_registros_stands' %}" class="nav-link">Usuarios Visitantes</a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.horarios_citas or permisos_categoria.citas %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebarCitas" data-bs-toggle="collapse" role="button"
+                                    aria-expanded="false" aria-controls="sidebarCitas">
+                                    <i class="ri-calendar-todo-line"></i>
+                                    <span data-key="t-citas">Citas</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarCitas">
+                                    <ul class="nav nav-sm flex-column">
+                                        {% if permisos_categoria.todos or permisos_categoria.horarios_citas %}
+                                            <li class="nav-item"><a href="{% url 'gestionar_horarios_citas' %}" class="nav-link">Horarios Para Citas</a></li>
+                                        {% endif %}
+                                        {% if permisos_categoria.todos or permisos_categoria.citas %}
+                                            <li class="nav-item"><a href="{% url 'listado_citas' %}" class="nav-link">Listar Citas</a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.patrocinadores %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebarPatrocinadores" data-bs-toggle="collapse" role="button"
+                                    aria-expanded="false" aria-controls="sidebarPatrocinadores">
+                                    <i class="ri-hand-heart-line"></i>
+                                    <span data-key="t-patrocinadores">Patrocinadores</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarPatrocinadores">
+                                    <ul class="nav nav-sm flex-column">
+                                        <li class="nav-item"><a href="{% url 'listado_patrocinadores' %}" class="nav-link">Listar Patrocinadores</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.entradas or permisos_categoria.cupones_entrada or permisos_categoria.compras_entradas %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebarEntradas" data-bs-toggle="collapse" role="button"
+                                    aria-expanded="false" aria-controls="sidebarEntradas">
+                                    <i class="ri-ticket-line"></i>
+                                    <span data-key="t-entradas">Entradas</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarEntradas">
+                                    <ul class="nav nav-sm flex-column">
+                                        {% if permisos_categoria.todos or permisos_categoria.entradas or permisos_categoria.cupones_entrada %}
+                                        <li class="nav-item"><a href="{% url 'listado_entradas' %}" class="nav-link">Listar Entradas</a></li>
+                                        {% endif %}
+                                        {% if permisos_categoria.todos or permisos_categoria.compras_entradas %}
+                                        <li class="nav-item"><a href="{% url 'listado_compras_efectivo' %}" class="nav-link">Compras en Efectivo Pendientes</a></li>
+                                        {% endif %}
+                                        {% if permisos_categoria.todos or permisos_categoria.compras_entradas %}
+                                        <li class="nav-item"><a href="{% url 'listar_compras_entradas' %}" class="nav-link">Compras Registradas</a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.aportaciones or permisos_categoria.aportadores %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebarAportaciones" data-bs-toggle="collapse" role="button"
+                                    aria-expanded="false" aria-controls="sidebarAportaciones">
+                                    <i class="ri-money-dollar-circle-line"></i>
+                                    <span data-key="t-aportaciones">Aportaciones</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarAportaciones">
+                                    <ul class="nav nav-sm flex-column">
+                                        {% if permisos_categoria.todos or permisos_categoria.aportadores %}
+                                            <li class="nav-item"><a href="{% url 'listado_aportadores' %}" class="nav-link">Aportadores</a></li>
+                                        {% endif %}
+                                        {% if permisos_categoria.todos or permisos_categoria.aportaciones %}
+                                            <li class="nav-item"><a href="{% url 'listado_aportaciones' %}" class="nav-link">Listar Aportaciones</a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.usuarios or permisos_categoria.clientes %}
+                            
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebarUsuarios" data-bs-toggle="collapse" role="button"
+                                    aria-expanded="false" aria-controls="sidebarUsuarios">
+                                    <i class="ri-group-line"></i>
+                                    <span data-key="t-usuarios">Usuarios</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarUsuarios">
+                                    {% if permisos_categoria.todos or permisos_categoria.usuarios %}
+                                    <ul class="nav nav-sm flex-column">
+                                            <li class="nav-item"><a href="{% url 'listar_administradores' %}" class="nav-link">Listar Usuarios</a></li>
+                                    </ul>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.escanear_eventos or permisos_categoria.escanear_actividades or permisos_categoria.escanear_stands %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebarEscaneoQR" data-bs-toggle="collapse" role="button"
+                                    aria-expanded="false" aria-controls="sidebarEscaneoQR">
+                                    <i class="ri-qr-code-line"></i> 
+                                    <span data-key="t-escanear-qr">Escanear QR</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarEscaneoQR">
+                                    <ul class="nav nav-sm flex-column">
+                                        {% if permisos_categoria.todos or permisos_categoria.escanear_eventos %}
+                                            <li class="nav-item">
+                                                <a href="{% url 'escaneo_evento' %}" class="nav-link" data-key="t-escanear-evento">Escanear Entrada a Evento</a>
+                                            </li>
+                                        {% endif %}
+                    
+                                        {% if permisos_categoria.todos or permisos_categoria.escanear_actividades %}
+                                            <li class="nav-item">
+                                                <a href="{% url 'escaneo_actividad' %}" class="nav-link" data-key="t-escanear-actividad">Escanear Entrada a Actividad</a>
+                                            </li>
+                                        {% endif %}
+
+                                        {% if permisos_categoria.todos or permisos_categoria.escanear_stands %}
+                                            <li class="nav-item">
+                                                <a href="{% url 'escaneo_stand' %}" class="nav-link" data-key="t-escanear-stand">Escanear Visita a Stand</a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.registros_eventos or permisos_categoria.registros_actividades or permisos_categoria.registros_stands %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="{% url 'configurar_exportacion' %}">
+                                    <i class="ri-download-2-line"></i>
+                                    <span data-key="t-descargas">Configuración de Descargas</span>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.banners %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="{% url 'banner_principal' %}">
+                                    <i class="ri-image-line"></i>
+                                    <span data-key="t-banner">Banners Principales</span>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.archivos_pagina %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="{% url 'gestionar_archivos' %}">
+                                    <i class="ri-folder-line"></i>
+                                    <span data-key="t-archivos">Archivos de la Página</span>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.notificaciones %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebarNotificaciones" data-bs-toggle="collapse" role="button"
+                                    aria-expanded="false" aria-controls="sidebarNotificaciones">
+                                    <i class="ri-notification-3-line"></i>
+                                    <span data-key="t-notificaciones">Notificaciones</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarNotificaciones">
+                                    <ul class="nav nav-sm flex-column">
+                                        <li class="nav-item"><a href="{% url 'listado_notificaciones' %}" class="nav-link">Listar Notificaciones</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.datos_pago_efectivo %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="{% url 'configurar_pago_efectivo' %}">
+                                    <i class="ri-bank-line"></i>
+                                    <span data-key="t-pago-efectivo">Pago en Efectivo</span>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if permisos_categoria.todos or permisos_categoria.chatbot %}
+                            <li class="nav-item">
+                                <a class="nav-link menu-link" href="#sidebarChatbot" data-bs-toggle="collapse" role="button"
+                                    aria-expanded="false" aria-controls="sidebarChatbot">
+                                    <i class="ri-robot-2-line"></i>
+                                    <span data-key="t-chatbot">Chatbot</span>
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarChatbot">
+                                    <ul class="nav nav-sm flex-column">
+                                        <li class="nav-item">
+                                            <a href="{% url 'chatbot_config' %}" class="nav-link">Configuración del Prompt</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'chatbot_documentos' %}" class="nav-link">Documentos</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        {% endif %}
+
+                    </ul>
+                    
+                </div>
+                
+            </div>
+            <div class="sidebar-background"></div>
+        </div>
+
+        <div class="vertical-overlay"></div>
+{% endblock sidebar %}

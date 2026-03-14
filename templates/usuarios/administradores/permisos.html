@@ -1,0 +1,325 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Asignar Permisos{% endblock %}
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+{% block content %}
+
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+        {% include "partials/page-title.html" with pagetitle="Administradores" title="Asignar Permisos" %}
+            <div class="text-end mb-3">
+                <button type="button" class="btn btn-success" onclick="asignarTodosPermisos()">Asignar todos los permisos</button>
+            </div>
+            <form method="post"> {% csrf_token %}
+                <input type="hidden" name="usuario_id" value="{{ usuario.idUsuario }}">
+                <div class="row">
+                {% for categoria, acciones in permisos_def.items %}
+                    {% if categoria not in "archivos_evento,archivos_conferencista,productos_stand,archivos_stand,cupones_entrada" %}
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                        <div class="card-header">
+                            <strong>
+                            {% for key, label in etiquetas_categorias.items %}
+                                {% if key == categoria %}
+                                {{ label }}
+                                {% endif %}
+                            {% endfor %}
+                            </strong>
+                        </div>
+
+                        <div class="card-body">
+                            {% for accion in acciones %}
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input"
+                                    type="checkbox"
+                                    name="acciones_{{ categoria }}"
+                                    value="{{ accion }}"
+                                    id="{{ categoria }}_{{ accion }}"
+                                    {% for key, marcadas in permisos_marcados.items %}
+                                        {% if key == categoria and accion in marcadas %}
+                                        checked
+                                        {% endif %}
+                                    {% endfor %}>
+                                <label class="form-check-label" for="{{ categoria }}_{{ accion }}">{{ accion|title }}</label>
+                            </div>
+                            {% endfor %}
+
+                            {% if categoria == "eventos" %}
+                            <hr><p class="fw-bold mt-2">Archivos de Evento</p>
+                            {% for accion in permisos_def.archivos_evento %}
+                                <div class="form-check form-check-inline">
+                                <input class="form-check-input"
+                                        type="checkbox"
+                                        name="acciones_archivos_evento"
+                                        value="{{ accion }}"
+                                        id="archivos_evento_{{ accion }}"
+                                        {% for key, marcadas in permisos_marcados.items %}
+                                        {% if key == "archivos_evento" and accion in marcadas %}
+                                            checked
+                                        {% endif %}
+                                        {% endfor %}>
+                                <label class="form-check-label" for="archivos_evento_{{ accion }}">{{ accion|title }}</label>
+                                </div>
+                            {% endfor %}
+                            {% elif categoria == "conferencistas" %}
+                            <hr><p class="fw-bold mt-2">Archivos de Conferencista</p>
+                            {% for accion in permisos_def.archivos_conferencista %}
+                                <div class="form-check form-check-inline">
+                                <input class="form-check-input"
+                                        type="checkbox"
+                                        name="acciones_archivos_conferencista"
+                                        value="{{ accion }}"
+                                        id="archivos_conferencista_{{ accion }}"
+                                        {% for key, marcadas in permisos_marcados.items %}
+                                        {% if key == "archivos_conferencista" and accion in marcadas %}
+                                            checked
+                                        {% endif %}
+                                        {% endfor %}>
+                                <label class="form-check-label" for="archivos_conferencista_{{ accion }}">{{ accion|title }}</label>
+                                </div>
+                            {% endfor %}
+                            {% elif categoria == "stands" %}
+                    <button class="btn btn-sm btn-outline-info mb-2"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#ayudaRepStands"
+                            aria-expanded="false"
+                            aria-controls="ayudaRepStands">
+                      ¿Cómo funciona el permiso “representante”?
+                    </button>
+
+                    <div id="ayudaRepStands" class="collapse">
+                      <div class="alert alert-info small mb-3">
+                        <strong>Permiso “representante”</strong>
+                        <ul class="mb-0 ps-3">
+                          <li>Concede al usuario <u>todas</u> las acciones de Stands (agregar, editar, desactivar),
+                              <b>pero solo</b> sobre los stands donde sea representante.</li>
+                          <li>Selecciona el <b>alcance</b> <i>solo en la sección “Stands”</i> para que al crear un stand se pueda elegir a qué evento pertenece, alcance de empresa dara todos los eventos de esta como opción, alcance de evento unicamente dara este de opción y alcance se stand dara unicamente como opción el evento al que pertenezca el seleccionado.</li>
+                          <li>En las demás subsecciones (productos, archivos, registros, horarios y citas) <b>no es necesario</b> elegir alcance si <i>únicamente</i> das el permiso de “representante”.</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <hr><p class="fw-bold mt-2">Productos de Stand</p>
+                    {% for accion in permisos_def.productos_stand %}
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               name="acciones_productos_stand"
+                               value="{{ accion }}"
+                               id="productos_stand_{{ accion }}"
+                          {% for key, marcadas in permisos_marcados.items %}
+                            {% if key == "productos_stand" and accion in marcadas %}checked{% endif %}
+                          {% endfor %}>
+                        <label class="form-check-label" for="productos_stand_{{ accion }}">{{ accion|title }}</label>
+                      </div>
+                    {% endfor %}
+
+                    <hr><p class="fw-bold mt-2">Archivos de Stand</p>
+                    {% for accion in permisos_def.archivos_stand %}
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               name="acciones_archivos_stand"
+                               value="{{ accion }}"
+                               id="archivos_stand_{{ accion }}"
+                          {% for key, marcadas in permisos_marcados.items %}
+                            {% if key == "archivos_stand" and accion in marcadas %}checked{% endif %}
+                          {% endfor %}>
+                        <label class="form-check-label" for="archivos_stand_{{ accion }}">{{ accion|title }}</label>
+                      </div>
+                    {% endfor %}
+                            {% elif categoria == "entradas" %}
+                            <hr><p class="fw-bold mt-2">Cupones de Entrada</p>
+                            {% for accion in permisos_def.cupones_entrada %}
+                                <div class="form-check form-check-inline">
+                                <input class="form-check-input"
+                                        type="checkbox"
+                                        name="acciones_cupones_entrada"
+                                        value="{{ accion }}"
+                                        id="cupones_entrada_{{ accion }}"
+                                        {% for key, marcadas in permisos_marcados.items %}
+                                        {% if key == "cupones_entrada" and accion in marcadas %}
+                                            checked
+                                        {% endif %}
+                                        {% endfor %}>
+                                <label class="form-check-label" for="cupones_entrada_{{ accion }}">{{ accion|title }}</label>
+                                </div>
+                            {% endfor %}
+                            {% endif %}
+
+                            {% for key, alcances in alcances_por_seccion.items %}
+                            {% if key == categoria %}
+                                <hr>
+                                <div class="mt-2">
+                                <label class="form-label d-block">Alcance:</label>
+                                {% for tipo in alcances %}
+                                    <div class="form-check form-check-inline">
+                                    <input class="form-check-input"
+                                            type="radio"
+                                            name="alcance_{{ categoria }}"
+                                            value="{{ tipo }}"
+                                            onchange="mostrarSelect('{{ categoria }}', '{{ tipo }}')"
+                                            {% for k2, data in alcances_marcados.items %}
+                                            {% if k2 == categoria and data.alcance == tipo %}
+                                                checked
+                                            {% endif %}
+                                            {% endfor %}>
+                                    <label class="form-check-label">{{ tipo|title }}</label>
+                                    </div>
+                                {% endfor %}
+
+                                <div id="select_estado_{{ categoria }}" class="mt-2 d-none">
+                                    <select name="valor_{{ categoria }}_estado" class="form-select select2-single">
+                                    {% for estado in estados %}
+                                        <option value="{{ estado }}"
+                                        {% for k2, data in alcances_marcados.items %}
+                                            {% if k2 == categoria and estado in data.valores %}
+                                            selected
+                                            {% endif %}
+                                        {% endfor %}
+                                        >{{ estado }}</option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div id="select_evento_{{ categoria }}" class="mt-2 d-none">
+                                    <select name="valor_{{ categoria }}_evento" multiple class="form-select select2-multiple">
+                                    {% for evento in eventos %}
+                                        <option value="{{ evento.idEvento }}"
+                                        {% for k2, data in alcances_marcados.items %}
+                                            {% if k2 == categoria and evento.idEvento|stringformat:"s" in data.valores %}
+                                            selected
+                                            {% endif %}
+                                        {% endfor %}
+                                        >{{ evento.aNombre }}</option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div id="select_actividad_{{ categoria }}" class="mt-2 d-none">
+                                    <select name="valor_{{ categoria }}_actividad" multiple class="form-select select2-multiple">
+                                    {% for act in actividades %}
+                                        <option value="{{ act.idActividad }}"
+                                        {% for k2, data in alcances_marcados.items %}
+                                            {% if k2 == categoria and act.idActividad|stringformat:"s" in data.valores %}
+                                            selected
+                                            {% endif %}
+                                        {% endfor %}
+                                        >{{ act.aNombre }}</option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div id="select_stand_{{ categoria }}" class="mt-2 d-none">
+                                    <select name="valor_{{ categoria }}_stand" multiple class="form-select select2-multiple">
+                                    {% for stand in stands %}
+                                        <option value="{{ stand.idStand }}"
+                                        {% for k2, data in alcances_marcados.items %}
+                                            {% if k2 == categoria and stand.idStand|stringformat:"s" in data.valores %}
+                                            selected
+                                            {% endif %}
+                                        {% endfor %}
+                                        >{{ stand.aNombre }}</option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+                                </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                </div>
+
+                <div class="text-end">
+                <button type="submit" class="btn btn-primary">Guardar Permisos</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+<script>
+  function mostrarSelect(categoria, tipo) {
+    const alcances = ['estado', 'evento', 'actividad', 'stand'];
+    alcances.forEach(t => {
+      const sel = document.getElementById(`select_${t}_${categoria}`);
+      if (sel) sel.classList.add('d-none');
+    });
+
+    const activo = document.getElementById(`select_${tipo}_${categoria}`);
+    if (activo) activo.classList.remove('d-none');
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const radios = document.querySelectorAll('input[type="radio"]:checked');
+    radios.forEach(function (radio) {
+      const categoria = radio.name.replace('alcance_', '');
+      const tipo = radio.value;
+      mostrarSelect(categoria, tipo);
+    });
+
+    $('.select2-multiple').select2({
+      width: '100%',
+      placeholder: "Selecciona una o varias opciones",
+      allowClear: true
+    });
+
+    $('.select2-single').select2({
+      width: '100%',
+      placeholder: "Selecciona una opción",
+      allowClear: true
+    });
+  });</script>
+<script>
+  function asignarTodosPermisos() {
+    const estado = "{{ request.user.aAnadic }}";
+
+    document.querySelectorAll('input[type="checkbox"]').forEach(input => {
+      input.checked = true;
+    });
+
+    const alcances = {{ alcances_por_seccion|safe }};
+    for (const categoria in alcances) {
+      const radio = document.querySelector(`input[name="alcance_${categoria}"][value="estado"]`);
+      if (radio) {
+        radio.checked = true;
+        mostrarSelect(categoria, "estado");
+
+        const select = document.querySelector(`select[name="valor_${categoria}_estado"]`);
+        if (select) {
+          Array.from(select.options).forEach(option => {
+            option.selected = option.value === estado;
+          });
+          $(select).trigger('change');
+        }
+      }
+    }
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Permisos marcados',
+      html: `Todos los permisos han sido seleccionados.<br>Para secciones con alcance, se asignó automáticamente el estado <strong>${estado}</strong>.<br><br>`,
+      timer: 10000,
+      timerProgressBar: true
+    }).then(() => {
+      Swal.fire({
+        icon: 'info',
+        title: 'Recuerda',
+        text: 'Estos permisos aún no se han guardado. Haz clic en "Guardar Permisos" para aplicar los cambios.',
+        timer: 5000,
+        timerProgressBar: true
+      });
+    });
+  }</script>
+{% endblock %}

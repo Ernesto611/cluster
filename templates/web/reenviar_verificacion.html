@@ -1,0 +1,41 @@
+{% extends "web/layouts/base.html" %}
+{% block title %}Reenviar Verificación{% endblock %}
+{% block content %}
+<div class="auth-page-wrapper pt-5">
+    <div class="auth-page-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6 col-xl-5">
+                    <div class="card mt-4">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="text-primary">Reenviar Correo de Verificación</h5>
+                            <p class="text-muted">Si no has recibido el correo de verificación, ingresa tu email y te lo reenviamos.</p>
+                            <form method="POST">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="{{ form.email.id_for_label }}" class="form-label">Correo Electrónico</label>
+                                    {{ form.email }}
+                                </div>
+                                <button type="submit" class="btn btn-secondary w-100">Reenviar Correo</button>
+                            </form>
+                            {% if messages %}
+                                <div class="mt-3">
+                                    {% for message in messages %}
+                                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card mt-4">
+                        <div class="mt-4 text-center">
+                            <p>¿Ya verificaste tu cuenta? <a href="{% url 'login' %}" class="fw-semibold text-primary text-decoration-underline">Iniciar Sesión</a></p>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

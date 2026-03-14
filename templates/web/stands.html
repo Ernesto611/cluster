@@ -1,0 +1,35 @@
+{% extends "web/layouts/base.html" %}
+{% load static %}
+{% block title %}Detalles {{ tipo }}{% endblock title %}
+{% block content %}
+
+    <br><br><br>
+    <section class="page-header">
+        <div class="container">
+            <div class="content">
+                <h4>Todos los stands</h4>
+                <ul></ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="sponsor " class="sponsor sponsor-uhv event-sponsor-page padding-120">
+        <div class="container">
+            <div class="section-header text-center">
+                <h3>Nuestros stands</h3>
+            </div>
+
+            <div class="sponsor-item">
+                {% for stand in stands %}
+                    <a href="{% url 'stand_detalles' stand.idStand %}">
+                        <img src="{{ stand.aImagen.url }}" alt="sponsor image" class="img-responsive" style="width: 370px; height: 150px; object-fit: contain;">
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {% block footer %}
+    {% include "web/layouts/footer.html" %}
+{% endblock footer %}
+{% endblock content %}

@@ -1,0 +1,129 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Crear Entrada{% endblock %}
+
+{% block extra_css %}
+    <link href="{% static 'libs/dropzone/dist/dropzone.css'%}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'node_modules/select2/dist/css/select2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Entradas" title="Crear Entrada" %}
+            {% endblock pagetitle %}
+            <div class="alert alert-danger" role="alert" {% if not form.errors %}style="display: none;"{% endif %}>
+                <strong>Errores:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field }}: {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <form method="POST" enctype="multipart/form-data" id="create-entrada-form" autocomplete="off">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Información</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label" for="entrada-name-input">Nombre de la Entrada</label>
+                                    {{ form.aNombre }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="entrada-evento-input">Evento</label>
+                                    {{ form.idEvento }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="entrada-costo-input">Costo</label>
+                                    {{ form.nCosto }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="entrada-cantidad-input">Cantidad</label>
+                                    {{ form.nCantidad }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="entrada-multiple-checkbox">¿Se puede comprar más de una entrada?</label>
+                                    {{ form.lMultiple }}
+                                    <div class="form-text">Marque esta opción para que un usuario pueda, por ejemplo, comprar 5 entradas para otros usuarios.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Actividades</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check form-switch mb-3">
+                                    <label class="form-check-label" for="incluir-actividades-checkbox">¿Incluir actividades?</label>
+                                    {{ form.incluir_actividades }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="entrada-actividades-input">Actividades Incluidas</label>
+                                    {{ form.actividades }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-end mb-3">
+                        <button type="submit" class="btn btn-primary">Guardar Entrada</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script src="{% static 'node_modules/select2/dist/js/select2.min.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            jQuery('#entrada-actividades-input').select2({
+                placeholder: 'Selecciona las actividades',
+                allowClear: true,
+            });
+
+            const incluirActividadesCheckbox = document.getElementById('incluir-actividades-checkbox');
+            const actividadesInput = document.getElementById('entrada-actividades-input');
+
+            incluirActividadesCheckbox.addEventListener('change', function () {
+                actividadesInput.disabled = !this.checked;
+                if (!this.checked) {
+                    jQuery('#entrada-actividades-input').val(null).trigger('change');
+                }
+            });
+
+            const eventoInput = document.getElementById('entrada-evento-input');
+            eventoInput.addEventListener('change', function () {
+                const eventoId = this.value;
+                if (eventoId) {
+                    fetch(`/entradas/${eventoId}/actividades/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const actividadesInput = document.getElementById('entrada-actividades-input');
+                            actividadesInput.innerHTML = '';
+                            data.forEach(actividad => {
+                                const option = document.createElement('option');
+                                option.value = actividad.idActividad;
+                                option.text = actividad.aNombre;
+                                actividadesInput.add(option);
+                            });
+                        });
+                }
+            });
+        });
+</script>
+{% endblock extra_js %}

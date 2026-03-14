@@ -1,0 +1,164 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Crear Conferencista{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'libs/dropzone/dist/dropzone.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Conferencistas" title="Crear Conferencista" %}
+            {% endblock pagetitle %}
+
+            <div class="alert alert-danger" role="alert" {% if not form.errors %}style="display: none;"{% endif %}>
+                <strong>Errores:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field }}: {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" id="create-expositor-form" autocomplete="off">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Información del Conferencista</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre</label>
+                                    {{ form.aNombre }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Correo Electrónico</label>
+                                    {{ form.aEmail }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Biografía</label>
+                                    {{ form.aBiografia }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Foto</label>
+                                    {{ form.aFoto }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Redes Sociales y Contacto</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <label class="form-label">Teléfono</label>
+                                        {{ form.aTelefono }}
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <label class="form-label">WhatsApp</label>
+                                        {{ form.aWhatsapp }}
+                                        <div class="form-check">
+                                            {{ form.whatsapp_es_mismo }}
+                                            <label class="form-check-label" for="whatsapp_es_mismo">Usar el mismo número de teléfono</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <label class="form-label">Facebook</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">https://www.facebook.com/</span>
+                                        {{ form.aFacebook }}
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <label class="form-label">Instagram</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">https://www.instagram.com/</span>
+                                        {{ form.aInstagram }}
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <label class="form-label">Twitter</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">https://twitter.com/</span>
+                                        {{ form.aTwitter }}
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <label class="form-label">Sitio Web</label>
+                                    {{ form.aSitioWeb }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-end mb-3">
+                        <button type="submit" class="btn btn-primary">Guardar Conferencista</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'libs/dropzone/dist/dropzone-min.js' %}"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script>
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: "{{ message }}",
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: "{{ message }}",
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let whatsappCheckbox = document.getElementById("{{ form.whatsapp_es_mismo.id_for_label }}");
+        let telefonoField = document.getElementById("{{ form.aTelefono.id_for_label }}");
+        let whatsappField = document.getElementById("{{ form.aWhatsapp.id_for_label }}");
+
+        function toggleWhatsappField() {
+            if (whatsappCheckbox.checked) {
+                whatsappField.value = telefonoField.value;
+                whatsappField.disabled = true;
+            } else {
+                whatsappField.disabled = false;
+            }
+        }
+
+        whatsappCheckbox.addEventListener('change', toggleWhatsappField);
+
+        telefonoField.addEventListener('input', function () {
+            if (whatsappCheckbox.checked) {
+                whatsappField.value = telefonoField.value;
+            }
+        });
+
+        toggleWhatsappField();
+    });</script>
+
+{% endblock %}

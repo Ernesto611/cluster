@@ -1,0 +1,63 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Agregar Cupón{% endblock title %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+
+            {% include "partials/page-title.html" with pagetitle="Cupones" title="Agregar Cupón a {{ entrada.aNombre }}" %}
+
+            <div class="alert alert-danger" role="alert" {% if not form.errors %}style="display: none;"{% endif %}>
+                <strong>Errores:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field|capfirst }}: {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <form method="POST" autocomplete="off">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Información del Cupón</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label" for="cupon-indicador-input">Indicador (opcional)</label>
+                                    {{ form.indicador }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="cupon-tipo-input">Tipo de Descuento</label>
+                                    {{ form.eTipo }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="cupon-valor-input">Valor</label>
+                                    {{ form.nValor }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="cupon-limite-input">Límite de Uso</label>
+                                    {{ form.nLimiteUso }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="cupon-aplicatotal-checkbox">¿Aplica al total de la compra?</label>
+                                    {{ form.lAplicaTotal }}
+                                    <div class="form-text">Si se marca esta opción el descuento aplicara a todas las entradas si se compra en multiple cantidad.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end mt-3">
+                            <button type="submit" class="btn btn-primary">Guardar Cupón</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,252 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Citas{% endblock title %}
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Citas" title="Listado" %}
+            {% endblock pagetitle %}
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" id="citaList">
+                        <div class="card-header border-0">
+                            <div class="row align-items-center gy-3">
+                                <div class="col-sm">
+                                    <h5 class="card-title mb-0">Listado de Citas</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body border border-dashed border-end-0 border-start-0">
+                            <form method="get" class="row g-3 mb-3">
+                                <div class="d-flex flex-wrap align-items-end gap-3">
+                                    <div class="flex-grow-1">
+                                        <div class="search-box">
+                                            <input type="text" name="q" class="form-control" placeholder="Buscar por nombre o correo..." value="{{ q|default_if_none:'' }}">
+                                            <i class="ri-search-line search-icon"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex-shrink-0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="text-muted">Stand: </span>
+                                            <select name="stand" class="form-control mb-0" data-choices data-choices-search-false>
+                                                <option value="">Todos los stands</option>
+                                                {% for s in stands %}
+                                                    <option value="{{ s.idStand }}" {% if stand_id == s.idStand|stringformat:"s" %}selected{% endif %}>{{ s.aNombre }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex-shrink-0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="text-muted">Estado: </span>
+                                            <select name="status" class="form-control mb-0">
+                                                <option value="">Todos</option>
+                                                {% for k, v in citas.model.STATUS_CHOICES %}
+                                                    <option value="{{ k }}" {% if status == k %}selected{% endif %}>{{ v }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex-shrink-0">
+                                        <button type="submit" class="btn btn-primary w-100"><i class="ri-filter-line"></i></button>
+                                    </div>
+                                </div>    
+                            </form>
+                        </div>
+                        <br>
+
+                        <div class="card-body pt-0">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div id="table-counter" class="text-muted small" aria-live="polite">
+                                        Mostrando 0–0 de 0 registros
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="table-responsive table-card mb-1">
+                                    <table class="table table-nowrap align-middle" id="orderTable">
+                                        <thead class="text-muted table-light">
+                                            <tr class="text-uppercase fs-13">
+                                                <th class="sort" data-sort="name">Nombre</th>
+                                                <th class="sort" data-sort="lastname">Apellido/s</th>
+                                                <th class="sort" data-sort="email">Correo</th>
+                                                <th class="sort" data-sort="stand">Stand</th>
+                                                <th class="sort" data-sort="fecha">Fecha y Hora</th>
+                                                <th class="sort" data-sort="status">Estado</th>
+                                                <th class="sort" data-sort="status_pago">Pago</th>
+                                                <th class="sort" data-sort="metodo_pago">Método</th>
+                                                <th class="sort" data-sort="monto_pago">Monto</th>
+                                                <th>Opciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="list form-check-all">
+                                            {% for cita in citas %}
+                                            <tr>
+                                                <td class="name">{{ cita.idUsuario.aNombre }}</td>
+                                                <td class="lastname">{{ cita.idUsuario.aApellido }}</td>
+                                                <td class="email">{{ cita.idUsuario.email }}</td>
+                                                <td class="stand">{{ cita.idStand.aNombre }}</td>
+                                                <td class="fecha">{{ cita.fFechaHora|date:"d/m/Y H:i" }}</td>
+                                                <td class="status">
+                                                    {% if cita.aStatus == 'pendiente' %}
+                                                        <span class="badge bg-warning text-uppercase">{{ cita.get_aStatus_display }}</span>
+                                                    {% elif cita.aStatus == 'aceptada' or cita.aStatus == 'completada' %}
+                                                        <span class="badge bg-success text-uppercase">{{ cita.get_aStatus_display }}</span>
+                                                    {% elif cita.aStatus == 'rechazada' or cita.aStatus == 'cancelada' %}
+                                                        <span class="badge bg-danger text-uppercase">{{ cita.get_aStatus_display }}</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary text-uppercase">{{ cita.get_aStatus_display }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="status_pago">
+                                                    {% if cita.monto_pago %}
+                                                        {% if cita.status_pago == 'pagado' %}
+                                                            <span class="badge bg-success">Pagado</span>
+                                                        {% else %}
+                                                            <span class="badge bg-warning">Pendiente</span>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">N/A</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="metodo_pago">
+                                                    {{ cita.metodo_pago|title|default:"-" }}
+                                                </td>
+                                                <td class="monto_pago">
+                                                    {% if cita.monto_pago %} ${{ cita.monto_pago }} {% else %} - {% endif %}
+                                                </td>                                                
+                                                <td>
+                                                    <ul class="list-inline hstack gap-2 mb-0">
+                                                        <li class="list-inline-item" data-bs-toggle="tooltip" title="Detalles">
+                                                            <a href="{% url 'detalles_cita' cita.idCita %}" class="text-primary d-inline-block">
+                                                                <i class="ri-information-line fs-16"></i>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="6" class="text-center">No hay citas disponibles.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <div class="noresult" style="display: none">
+                                        <div class="text-center">
+                                            <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:75px;height:75px"></lord-icon>
+                                            <h5 class="mt-2">¡No encontramos ningún resultado!</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <div class="pagination-wrap hstack gap-2">
+                                        <a class="page-item pagination-prev disabled" href="#">
+                                            Anterior
+                                        </a>
+                                        <ul class="pagination listjs-pagination mb-0"></ul>
+                                        <a class="page-item pagination-next" href="#">
+                                            Siguiente
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% block footer %}
+    {% include "partials/footer.html" %}
+    {% endblock footer %}
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'libs/list.js/dist/list.min.js' %}"></script>
+<script src="{% static 'libs/list.pagination.js/dist/list.pagination.min.js' %}"></script>
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'error',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+<script>
+    var options = {
+        valueNames: ['name', 'lastname', 'email', 'stand', 'fecha', 'status', 'status_pago', 'metodo_pago', 'monto_pago'],
+        page: 10,
+        pagination: true
+    };
+
+    var citaList = new List('citaList', options);
+
+    function renderCounter(list) {
+        const el = document.getElementById('table-counter');
+        if (!el) return;
+
+        const total = list.matchingItems ? list.matchingItems.length : list.size();
+
+        let start = 0, end = 0;
+        if (total > 0) {
+
+            start = list.i;
+            end = list.i + list.visibleItems.length - 1;
+        }
+
+        const sufijo = (total === 1) ? 'registro' : 'registros';
+        el.textContent = `Mostrando ${start}–${end} de ${total} ${sufijo}`;
+    }
+
+    function togglePaginationControls() {
+        const paginationContainer = document.querySelector('.pagination-wrap');
+        const totalItems = citaList.matchingItems ? citaList.matchingItems.length : citaList.size();
+        const itemsPerPage = citaList.page;
+
+        if (totalItems <= itemsPerPage) {
+            paginationContainer.style.display = 'none';
+        } else {
+            paginationContainer.style.display = 'flex';
+        }
+    }
+
+    renderCounter(citaList);
+    togglePaginationControls();
+
+    citaList.on('updated', function (list) {
+        renderCounter(list);
+        togglePaginationControls();
+    });</script>
+{% endblock extra_js %}

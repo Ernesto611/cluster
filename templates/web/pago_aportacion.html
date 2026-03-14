@@ -1,0 +1,77 @@
+{% extends "web/layouts/base.html" %}
+{% block title %}Pago de Aportación{% endblock title %}
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <div class="content">
+            <h4>Pago de Aportación</h4>
+        </div>
+    </div>
+</section>
+
+<section class="shop-cart padding-120">
+    <div class="container">
+        <div class="cart-total">
+            <h4>{{ aportacion.aNombre }}</h4>
+            <p>{{ aportacion.aDescripcion }}</p>
+            <p>Total a Pagar: <strong>${{ monto_final|floatformat:2 }}</strong></p>
+        </div>
+
+        <div class="shipping">
+            <h4>Selecciona tu método de pago</h4>
+            <form method="post" onsubmit="return validarPago();">
+                {% csrf_token %}
+                <input type="hidden" name="metodo_pago" id="metodo_pago" required>
+
+                <div class="row">
+                    {% for metodo in metodos_pago %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card metodo-opcion h-100" onclick="seleccionarMetodo('{{ metodo }}', this)">
+                                <div class="card-body text-center">
+                                    {% if metodo == "Stripe" %}
+                                        <p>Tarjeta de Crédito/Débito</p>
+                                    {% elif metodo == "PayPal" %}
+                                        <p>PayPal</p>
+                                    {% elif metodo == "Efectivo" %}
+                                        <p>Pago en Efectivo</p>    
+                                    {% else %}
+                                        <p>{{ metodo }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-2" id="boton-pago">Proceder al Pago</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% block footer %}
+    {% include "web/layouts/footer.html" %}
+{% endblock footer %}
+
+{% endblock content %}
+{% block extra_js %}
+<script>
+    function validarPago() {
+        const metodo = document.getElementById("metodo_pago").value;
+        if (!metodo) {
+            alert("Selecciona un método de pago antes de continuar.");
+            return false;
+        }
+        return true;
+    }
+
+    function seleccionarMetodo(metodo, cardElement) {
+
+        document.getElementById('metodo_pago').value = metodo;
+
+        document.querySelectorAll('.metodo-opcion').forEach(function(card) {
+            card.classList.remove('border-primary');
+        });
+
+        cardElement.classList.add('border-primary');
+    }</script>
+{% endblock extra_js %}

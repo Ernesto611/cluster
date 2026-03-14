@@ -1,0 +1,140 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Detalles del Evento{% endblock %}
+
+{% block extra_css %}
+  <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+  <div class="page-content">
+    <div class="container-fluid">
+      {% block pagetitle %}
+      {% include "partials/page-title.html" with pagetitle="Eventos" title="Detalles del Evento" %}
+      {% endblock pagetitle %}
+
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Información</h5>
+            </div>
+            <div class="card-body">
+              <p><strong>Nombre del Evento:</strong> {{ evento.aNombre }}</p>
+              <p><strong>Descripción:</strong> {{ evento.aDescripcion }}</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Ubicación</h5>
+            </div>
+            <div class="card-body">
+              <p><strong>Calle:</strong> {{ evento.dCalle }}</p>
+              <p><strong>Número:</strong> {{ evento.dNumero }}</p>
+              <p><strong>Colonia:</strong> {{ evento.dColonia }}</p>
+              <p><strong>Ciudad:</strong> {{ evento.dCiudad }}</p>
+              <p><strong>Estado:</strong> {{ evento.dEstado }}</p>
+              <p><strong>Código Postal:</strong> {{ evento.dCP }}</p>
+
+              <div id="map" style="height: 300px; width: 100%;"></div>
+              <div class="mt-3">
+                <a id="directionsBtn" class="btn btn-outline-primary" target="_blank" rel="noopener">Cómo llegar</a>
+              </div>
+
+              <p class="text-muted mt-2" style="font-size: 0.9rem;">
+                Puedes hacer clic en el mapa para abrir la ruta en Google Maps.
+              </p>
+              <p><strong>Latitud:</strong> {{ evento.dLatitud }}</p>
+              <p><strong>Longitud:</strong> {{ evento.dLongitud }}</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Imagen</h5>
+            </div>
+            <div class="card-body">
+              {% if evento.aImagen %}
+                <img src="{{ evento.aImagen.url }}" alt="Imagen del Evento" class="img-fluid">
+              {% else %}
+                <p>No se cargó ninguna imagen.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Duración</h5>
+            </div>
+            <div class="card-body">
+              <p><strong>Fecha de Inicio:</strong> {{ evento.fFechaInicio }}</p>
+              <p><strong>Fecha de Fin:</strong> {{ evento.fFechaFin }}</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Opciones</h5>
+            </div>
+            <div class="card-body">
+              <p><strong>¿Es Gratuito?:</strong> {{ evento.lGratuito|yesno:"Sí,No" }}</p>
+              <p><strong>¿Mostrar Agenda?:</strong> {{ evento.lAgendaVisible|yesno:"Sí,No" }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-end mb-3">
+          <a href="{% url 'listado_eventos' %}" class="btn btn-secondary">Volver al listado</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="{% static 'js/maps.js' %}"></script>
+  <script>
+
+    function parseNum(val, fallback) {
+      if (val === undefined || val === null || val === "") return fallback;
+      const n = Number(String(val).replace(",", "."));
+      return isNaN(n) ? fallback : n;
+    }
+
+    const DEFAULT_LAT = 19.701809, DEFAULT_LNG = -101.196245;
+    const lat = parseNum("{{ evento.dLatitud|escapejs }}", DEFAULT_LAT);
+    const lng = parseNum("{{ evento.dLongitud|escapejs }}", DEFAULT_LNG);
+
+    const map = L.map('map').setView([lat, lng], 13);
+    addTiles(map);
+
+    const marker = L.marker([lat, lng]).addTo(map)
+      .bindPopup('Ubicación del evento: {{ evento.aNombre|escapejs }}');
+
+    const btn = document.getElementById('directionsBtn');
+    function setDirectionsHref(userLat, userLng) {
+      if (typeof userLat === 'number' && typeof userLng === 'number') {
+        btn.href = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${lat},${lng}&travelmode=driving`;
+      } else {
+        btn.href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+      }
+    }
+    setDirectionsHref();
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setDirectionsHref(pos.coords.latitude, pos.coords.longitude),
+        ()    => setDirectionsHref()
+      );
+    }
+
+    function openGMaps() { window.open(btn.href, '_blank'); }
+    marker.on('click', openGMaps);
+    map.on('click', openGMaps);
+</script>
+{% endblock %}

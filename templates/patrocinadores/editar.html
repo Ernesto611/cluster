@@ -1,0 +1,214 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Patrocinadores" title="Editar Patrocinador" %}
+
+            <div class="alert alert-danger" role="alert" {% if not form.errors %}style="display: none;"{% endif %}>
+                <strong>Errores:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field }}: {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <form method="POST" enctype="multipart/form-data" id="edit-patrocinador-form" autocomplete="off">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header"><h5>Información del Patrocinador</h5></div>
+                            <div class="card-body">
+                                <label>Nombre</label>
+                                {{ form.aNombre }}
+
+                                <label>Correo Electrónico</label>
+                                {{ form.aEmail }}
+
+                                <br>
+                                {{ form.aBiografia.label_tag }} {{ form.aBiografia }}
+
+                                <label>Evento</label>
+                                {{ form.idEvento }}
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header"><h5>Imagen del Patrocinador</h5></div>
+                            <div class="card-body">
+                                <label for="id_aFoto">Foto</label>
+                                <input type="file" name="aFoto" id="id_aFoto" class="form-control" accept="image/*" onchange="previewImage(event)">
+
+                                <div class="mt-2">
+                                    {% if patrocinador.aFoto %}
+                                        <img id="image-preview" src="{{ patrocinador.aFoto.url }}" alt="Imagen Previa" class="img-fluid" style="max-width: 200px;">
+                                    {% else %}
+                                        <img id="image-preview" src="#" alt="Imagen Previa" class="img-fluid" style="display: none; max-width: 200px;">
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header"><h5>Stand</h5></div>
+                            <div class="card-body">
+                                <div class="form-check">
+                                    <input type="checkbox" name="tiene_stand" id="id_tiene_stand" class="form-check-input"
+                                           {% if patrocinador.idStand %}checked{% endif %}>
+                                    <label class="form-check-label" for="id_tiene_stand">¿Tiene stand?</label>
+                                </div>                                
+                                <br>
+                                <div id="stand-fields" {% if patrocinador.idStand %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+                                    <label>Nombre</label>
+                                    {{ stand_form.aNombre }}
+                                    <label>Descripción</label>
+                                    {{ stand_form.aDescripcion }}
+                                    <label>Imagen</label>
+                                    {{ stand_form.aImagen }}
+                                    <label>Número de Stand</label>
+                                    {{ stand_form.nNumeroStand }}
+                                    <label>Representante</label>
+                                    {{ stand_form.representante_existente }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Redes Sociales y Contacto</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <label class="form-label">Teléfono</label>
+                                        {{ form.aTelefono }}
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <label class="form-label">WhatsApp</label>
+                                        {{ form.aWhatsapp }}
+                                        <div class="form-check">
+                                            {{ form.whatsapp_es_mismo }}
+                                            <label class="form-check-label" for="whatsapp_es_mismo">Usar el mismo número de teléfono</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <label class="form-label">Facebook</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">https://www.facebook.com/</span>
+                                        {{ form.aFacebook }}
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <label class="form-label">Instagram</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">https://www.instagram.com/</span>
+                                        {{ form.aInstagram }}
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <label class="form-label">Twitter</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">https://twitter.com/</span>
+                                        {{ form.aTwitter }}
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <label class="form-label">Sitio Web</label>
+                                    {{ form.aSitioWeb }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-end mb-3">
+                        <button type="submit" class="btn btn-primary">Actualizar Patrocinador</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script>
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: "{{ message }}",
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: "{{ message }}",
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+<script>
+function previewImage(event) {
+    var reader = new FileReader();
+    reader.onload = function () {
+        var output = document.getElementById('image-preview');
+        output.src = reader.result;
+        output.style.display = 'block';
+    };
+    reader.readAsDataURL(event.target.files[0]);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    let tieneStandCheckbox = document.getElementById("{{ form.tiene_stand.id_for_label }}");
+    let standFields = document.getElementById("stand-fields");
+
+    tieneStandCheckbox.addEventListener('change', function () {
+        standFields.style.display = this.checked ? "block" : "none";
+    });
+
+    if (tieneStandCheckbox.checked) {
+        standFields.style.display = "block";
+    }
+});</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let whatsappCheckbox = document.getElementById("{{ form.whatsapp_es_mismo.id_for_label }}");
+        let telefonoField = document.getElementById("{{ form.aTelefono.id_for_label }}");
+        let whatsappField = document.getElementById("{{ form.aWhatsapp.id_for_label }}");
+
+        function toggleWhatsappField() {
+            if (whatsappCheckbox.checked) {
+                whatsappField.value = telefonoField.value;
+                whatsappField.disabled = true;
+            } else {
+                whatsappField.disabled = false;
+            }
+        }
+
+        whatsappCheckbox.addEventListener('change', toggleWhatsappField);
+
+        telefonoField.addEventListener('input', function () {
+            if (whatsappCheckbox.checked) {
+                whatsappField.value = telefonoField.value;
+            }
+        });
+
+        toggleWhatsappField();
+    });</script>
+
+{% endblock %}

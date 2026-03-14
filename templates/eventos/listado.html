@@ -1,0 +1,288 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Eventos{% endblock title %}
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Eventos" title="Listado" %}
+            {% endblock pagetitle %}
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" id="eventList">
+                        <div class="card-header border-0">
+                            <div class="row align-items-center gy-3">
+                                <div class="col-sm">
+                                    <h5 class="card-title mb-0">Listado de Eventos</h5>
+                                </div>
+                                <div class="col-sm-auto">
+                                    <div class="d-flex gap-1 flex-wrap">
+                                        {% if user.tipo_usuario == 'super_administrador' or 'agregar' in permisos %}
+                                        <a type="button" href="{% url 'agregar_evento' %}" class="btn btn-success" id="crearEvento">
+                                            <i class="ri-calendar-event-fill align-bottom me-1"></i> Nuevo Evento
+                                        </a>
+                                        {% endif %}
+                                        <button class="btn btn-soft-danger" id="eliminar-multiple" onClick="deleteMultiple()">
+                                            <i class="ri-delete-bin-line"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body border border-dashed border-end-0 border-start-0">
+                            <form method="get" class="row g-3 mb-3">
+                                <div class="d-flex flex-wrap align-items-end gap-3">
+                                    <div class="flex-grow-1">
+                                        <div class="search-box">
+                                            <input type="text" name="q" class="form-control" placeholder="Buscar por nombre o dirección..." value="{{ q|default_if_none:'' }}">
+                                            <i class="ri-search-line search-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="text-muted">Fecha:</span>
+                                            <input type="text" name="fecha" class="form-control" 
+                                                   data-provider="flatpickr" 
+                                                   data-date-format="Y-m-d" 
+                                                   id="fecha-datepicker"
+                                                   value="{{ fecha|default_if_none:'' }}">
+                                        </div>
+                                    </div>                                    
+                                    <div class="flex-shrink-0">
+                                        <button type="submit" class="btn btn-primary w-100"><i class="ri-filter-line"></i></button>
+                                    </div>
+                                </div>    
+                            </form>
+                        </div>
+                        <br>
+                        <div class="card-body pt-0">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div id="table-counter" class="text-muted small" aria-live="polite">
+                                        Mostrando 0–0 de 0 registros
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="table-responsive table-card mb-1">
+                                    <table class="table table-nowrap align-middle" id="orderTable">
+                                        <thead class="text-muted table-light">
+                                            <tr class="text-uppercase fs-13">
+                                                <th scope="col" style="width: 25px;">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="checkAll" value="option">
+                                                    </div>
+                                                </th>
+                                                <th class="sort" data-sort="name">Nombre</th>
+                                                <th class="sort" data-sort="date">Fecha de inicio</th>
+                                                <th class="sort" data-sort="direction">Dirección</th>
+                                                <th class="sort" data-sort="status">Estado</th>
+                                                <th>Opciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="list form-check-all">
+                                            {% for evento in eventos %}
+                                            <tr>
+                                                <th scope="row">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="checkAll" value="{{ evento.idEvento }}">
+                                                    </div>
+                                                </th>
+                                                <td class="name">{{ evento.aNombre }}</td>
+                                                <td class="date">{{ evento.fFechaInicio|date:"d M, Y" }}</td>
+                                                <td class="direction">{{ evento.dCalle }} {{ evento.dNumero }}, {{ evento.dCiudad }} {{ evento.dEstado}}</td>
+                                                <td class="status">
+                                                    {% if evento.lActivo %}
+                                                    <span class="badge bg-success text-uppercase">Activo</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger text-uppercase">Inactivo</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <ul class="list-inline hstack gap-2 mb-0">
+                                                        
+                                                        <li class="list-inline-item" data-bs-toggle="tooltip" title="Detalles">
+                                                            <a href="{% url 'detalles_evento' evento.idEvento %}" class="text-primary d-inline-block">
+                                                                <i class="ri-information-line fs-16"></i>
+                                                            </a>
+                                                        </li>
+                                                        
+                                                         {% if user.tipo_usuario == 'super_administrador' or 'editar' in permisos %}
+                                                        <li class="list-inline-item edit" data-bs-toggle="tooltip" title="Editar">
+                                                            <a href="{% url 'editar_evento' evento.idEvento %}" class="text-primary d-inline-block edit-item-btn">
+                                                                <i class="ri-edit-box-line fs-16"></i>
+                                                            </a>
+                                                        </li>
+                                                        {% endif %}
+                                                        {% if user.tipo_usuario == 'super_administrador' or 'desactivar' in permisos %}
+                                                        <li class="list-inline-item" data-bs-toggle="tooltip" title="{% if evento.lActivo %}Desactivar{% else %}Activar{% endif %}">
+                                                            <form action="{% url 'alternar_estado_evento' evento.idEvento %}" method="POST" class="toggle-active-form" style="display: inline;">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-link p-0" style="text-decoration: none; color: {% if evento.lActivo %}#ffc107{% else %}#28a745{% endif %};">
+                                                                    <i class="{% if evento.lActivo %}ri-close-circle-line{% else %}ri-check-line{% endif %} fs-16"></i>
+                                                                </button>
+                                                            </form>
+                                                        </li>   
+                                                        {% endif %}                                                     
+
+                                                        {% if request.user.tipo_usuario == "super_administrador" or permisos_archivos %}
+                                                        <li class="list-inline-item" data-bs-toggle="tooltip" title="Archivos">
+                                                            <a href="{% url 'gestionar_archivos_evento' evento.idEvento %}" class="text-secondary d-inline-block">
+                                                            <i class="ri-folder-4-line fs-16"></i>
+                                                            </a>
+                                                        </li> 
+                                                        {% endif %}                                                                                                          
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                                {% if q or fecha %}
+                                                <script>
+                                                    document.addEventListener('DOMContentLoaded', function () {
+                                                        document.querySelector('.noresult').style.display = 'block';
+                                                    });
+</script>
+                                                {% else %}
+                                                <tr>
+                                                    <td colspan="6" class="text-center">No hay eventos disponibles.</td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>                                        
+                                    </table>
+                                    <div class="noresult" style="display: none">
+                                        <div class="text-center">
+                                            <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:75px;height:75px"></lord-icon>
+                                            <h5 class="mt-2">¡No encontramos ningún resultado!</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <div class="pagination-wrap hstack gap-2">
+                                        <a class="page-item pagination-prev disabled" href="#">
+                                            Anterior
+                                        </a>
+                                        <ul class="pagination listjs-pagination mb-0"></ul>
+                                        <a class="page-item pagination-next" href="#">
+                                            Siguiente
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% block footer %}
+    {% include "partials/footer.html" %}
+    {% endblock footer %}
+</div>
+{% endblock content %}
+{% block extra_js %}
+<script src="{% static 'libs/list.js/dist/list.min.js'%}"></script>
+<script src="{% static 'libs/list.pagination.js/dist/list.pagination.min.js'%}"></script>
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'error',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                const form = this.closest('.delete-form');
+
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: 'Esta acción eliminará el evento y no se puede deshacer.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, eliminarlo',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });</script>
+<script>
+    var options = {
+        valueNames: ['name', 'date', 'direction', 'status'],
+        page: 10,
+        pagination: true
+    };
+
+    var eventList = new List('eventList', options);
+
+    function renderCounter(list) {
+        const el = document.getElementById('table-counter');
+        if (!el) return;
+
+        const total = list.matchingItems ? list.matchingItems.length : list.size();
+
+        let start = 0, end = 0;
+        if (total > 0) {
+
+            start = list.i;
+            end = list.i + list.visibleItems.length - 1;
+        }
+
+        const sufijo = (total === 1) ? 'registro' : 'registros';
+        el.textContent = `Mostrando ${start}–${end} de ${total} ${sufijo}`;
+    }
+
+    function togglePaginationControls() {
+        const paginationContainer = document.querySelector('.pagination-wrap');
+        const totalItems = eventList.matchingItems ? eventList.matchingItems.length : eventList.size();
+        const itemsPerPage = eventList.page;
+
+        if (totalItems <= itemsPerPage) {
+            paginationContainer.style.display = 'none';
+        } else {
+            paginationContainer.style.display = 'flex';
+        }
+    }
+
+    renderCounter(eventList);
+    togglePaginationControls();
+
+    eventList.on('updated', function (list) {
+        renderCounter(list);
+        togglePaginationControls();
+    });</script>
+{% endblock extra_js %}

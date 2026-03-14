@@ -1,0 +1,322 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Banners Principales{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+<style>
+    .preview-container {
+        border: 1px solid #ccc;
+        padding: 10px;
+        overflow: hidden;
+        background-color: #f9f9f9;
+        text-align: center;
+    }
+</style>
+<style>
+    #cropperModal .modal-dialog {
+        max-width: 95vw;
+        width: 95vw;
+    }
+
+    #cropperModal .modal-content {
+        height: 90vh;
+    }
+
+    #cropperModal .modal-body {
+        height: 100%;
+        padding: 0;
+        overflow: auto;
+        text-align: center;
+    }
+
+    #imagen-recorte {
+        max-width: 100%;
+        max-height: 80vh;
+        width: auto;
+        height: auto;
+        display: inline-block;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+
+            {% include "partials/page-title.html" with pagetitle="Sitio" title="Banners Principales" %}
+
+            {% if banners|length < 5 %}
+                {% if user.tipo_usuario == 'super_administrador' or 'agregar' in permisos %}
+                <div class="text-end mb-3">
+                    <button type="button" class="btn btn-success" id="toggle-form-btn">
+                        <i class="ri-add-line"></i> Agregar nuevo banner
+                    </button>
+                </div>
+                {% endif %}
+            {% else %}
+            <div class="alert alert-warning text-center mb-3">
+                Se ha alcanzado el límite máximo de <strong>5 banners principales</strong>.
+            </div>
+            {% endif %}
+            <div id="formulario-banner" style="display: none;">
+                <div class="card">
+                    <div class="card-header"><h5 class="card-title mb-0">Agregar Banner</h5></div>
+                    <div class="card-body">
+                        <form method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{ form.non_field_errors }}
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Título:</label>
+                                    {{ form.titulo }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">URL (Opcional):</label>
+                                    {{ form.url }}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Seleccionar imagen (mínimo 1400x530)</label>
+                                <input type="file" id="input-imagen-banner" accept="image/*" class="form-control">
+                            </div>
+
+                            <input type="hidden" name="imagen_base64" id="imagen_base64">
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <p class="fw-bold mb-2">Vista previa</p>
+                                    <div class="preview-container" style="aspect-ratio: 1400 / 530;">
+                                        <img id="preview-escritorio" class="img-fluid" />
+                                    </div>
+                                </div>
+                                
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Agregar Banner</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header"><h5 class="card-title mb-0">Banners Actuales</h5></div>
+                <div class="card-body">
+                    {% if banners %}
+                        <div class="row">
+                            {% for banner in banners %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card">
+                                        <img src="{{ banner.imagen.url }}" class="card-img-top img-fluid" alt="{{ banner.titulo }}">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ banner.titulo }}</h5>
+                                            {% if banner.url %}
+                                                <p class="text-muted"><a href="{{ banner.url }}" target="_blank">{{ banner.url }}</a></p>
+                                            {% endif %}
+                                        </div>
+                                        {% if user.tipo_usuario == 'super_administrador' or 'editar' in permisos %}
+                                        <div class="d-flex justify-content-end mt-3 gap-2">
+                                        <a href="{% url 'editar_banner_principal' banner.id %}" class="btn btn-outline-primary btn-sm">
+                                            <i class="ri-edit-line"></i> Editar
+                                        </a>
+                                        {% endif %}
+                                        {% if user.tipo_usuario == 'super_administrador' or 'desactivar' in permisos %}
+                                        <form action="{% url 'alternar_estado_banner' banner.id %}" method="POST" class="d-inline toggle-active-form">
+                                            {% csrf_token %}
+                                            <button type="submit"
+                                                    class="btn btn-sm"
+                                                    style="color: {% if banner.lActivo %}#ffc107{% else %}#28a745{% endif %};"
+                                                    title="{% if banner.lActivo %}Desactivar{% else %}Activar{% endif %}">
+                                                <i class="{% if banner.lActivo %}ri-close-circle-line{% else %}ri-check-line{% endif %} fs-16"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        {% if user.tipo_usuario == 'super_administrador' or 'borrar' in permisos %}
+                                        <form method="POST" action="{% url 'eliminar_banner_principal' banner.id %}" class="d-inline delete-form">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-danger btn-sm delete-btn">
+                                                <i class="ri-delete-bin-line"></i> Eliminar
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No hay banners aún.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cropperModal" tabindex="-1" aria-labelledby="cropperModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cropperModalLabel">Recortar imagen del banner</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="imagen-recorte" style="width: 100%;" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="confirmar-recorte" data-bs-dismiss="modal">Recortar y continuar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'error',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let cropper;
+    const inputImagen = document.getElementById("input-imagen-banner");
+    const imagenRecorte = document.getElementById("imagen-recorte");
+    const previewEscritorio = document.getElementById("preview-escritorio");
+    const previewMovil = document.getElementById("preview-movil");
+    const inputBase64 = document.getElementById("imagen_base64");
+    const btnConfirmar = document.getElementById("confirmar-recorte");
+    const modal = new bootstrap.Modal(document.getElementById('cropperModal'));
+
+    inputImagen.addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            imagenRecorte.src = event.target.result;
+
+            imagenRecorte.onload = function () {
+                if (imagenRecorte.naturalWidth < 1400 || imagenRecorte.naturalHeight < 530) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Imagen muy pequeña',
+                        text: 'La imagen debe tener al menos 1400x530 píxeles.',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'Entendido'
+                    });
+                    imagenRecorte.src = "";
+                    inputImagen.value = "";
+                    return;
+                }
+
+                if (cropper) cropper.destroy();
+
+                cropper = new Cropper(imagenRecorte, {
+                    aspectRatio: 1400 / 530,
+                    viewMode: 1,
+                    autoCropArea: 1,
+                    responsive: true,
+                    background: false,
+                    movable: false
+                });
+
+                modal.show();
+
+                document.getElementById('cropperModal').addEventListener('shown.bs.modal', function () {
+                    if (cropper) cropper.destroy();
+
+                    cropper = new Cropper(imagenRecorte, {
+                        aspectRatio: 1400 / 530,
+                        viewMode: 1,
+                        autoCropArea: 1,
+                        responsive: true,
+                        background: false,
+                        movable: false
+                    });
+                });
+            };
+        };
+        reader.readAsDataURL(file);
+    });
+
+    btnConfirmar.addEventListener("click", function () {
+        if (!cropper) return;
+
+        const canvasEscritorio = cropper.getCroppedCanvas({ width: 1400, height: 530 });
+        const dataUrl = canvasEscritorio.toDataURL("image/jpeg");
+        previewEscritorio.src = dataUrl;
+        inputBase64.value = dataUrl;
+
+        const ctx = canvasEscritorio.getContext("2d");
+        const croppedMobile = document.createElement("canvas");
+        croppedMobile.width = 292;
+        croppedMobile.height = 530;
+
+        const offsetX = (canvasEscritorio.width - 292) / 2;
+        croppedMobile.getContext("2d").drawImage(
+            canvasEscritorio,
+            offsetX, 0, 292, 530,
+            0, 0, 292, 530
+        );
+
+        previewMovil.src = croppedMobile.toDataURL("image/jpeg");
+    });
+});
+
+document.getElementById("toggle-form-btn").addEventListener("click", function () {
+    const formDiv = document.getElementById("formulario-banner");
+    formDiv.style.display = formDiv.style.display === "none" ? "block" : "none";
+});
+
+document.querySelectorAll(".delete-form").forEach(form => {
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        Swal.fire({
+            title: "¿Estás seguro?",
+            text: "Esta acción eliminará el banner permanentemente.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#6c757d",
+            confirmButtonText: "Sí, eliminar",
+            cancelButtonText: "Cancelar"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "web/layouts/base.html" %}
+{% load static %}
+{% block title %}Detalles {{ tipo }}{% endblock title %}
+{% block content %}
+
+    <br><br><br>
+    <section class="page-header">
+        <div class="container">
+            <div class="content">
+                <h4>{{ detalles.idUsuario.aNombre }} detalles</h4>
+                <ul></ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="speaker-details padding-120">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-12 col-xs-12">
+                    <div class="speaker-image">
+                        <img src="{{ detalles.aFoto.url }}" alt="speaker image" class="img-responsive">
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 col-xs-12">
+                    <div class="speaker-content">
+                        <h4>{{ detalles.idUsuario.aNombre }}</h4>
+                        <p>{{ detalles.aBiografia }}
+                        </p>
+                        {% if detalles.idStand %}
+                            <a href="{% url 'stand_detalles' detalles.idStand.idStand %}" class="btn btn-primary mt-3" target="_blank">
+                                <i class="fa fa-building"></i> Visitar Stand
+                            </a>
+                        {% endif %}
+                        <ul class="speaker-social">
+                            {% if detalles.aFacebook %}
+                                <li><a href="{{ detalles.aFacebook }}"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+                            {% endif %}
+                            {% if detalles.aTwitter %}
+                                <li><a href="{{ detalles.aTwitter }}"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+                            {% endif %}
+                            {% if detalles.aInstagram %}
+                            <li><a href="{{ detalles.aInstagram }}"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+                            {% endif %}
+                        </ul>
+                        <ul class="speaker-address">
+                            <li><span><i class="fa fa-phone" aria-hidden="true"></i></span>{{ detalles.aTelefono }}</li>
+                            <li><span><i class="fa fa-envelope-o" aria-hidden="true"></i></span>{{ detalles.idUsuario.email }}</li>
+                            {% if detalles.aSitioWeb %}
+                            <li><span><i class="fa fa-globe" aria-hidden="true"></i></span>{{ detalles.aSitioWeb }}</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% block footer %}
+        {% include "web/layouts/footer.html" %}
+    {% endblock footer %}
+{% endblock content %}

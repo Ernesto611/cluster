@@ -1,0 +1,221 @@
+{% extends "web/layouts/base.html" %}
+{% load static %}
+{% block title %}Mi Perfil{% endblock %}
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+{% block content %}
+    <div class="auth-page-wrapper pt-5">
+        <div class="auth-page-content">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 col-lg-6 col-xl-5">
+                        <div class="card mt-4">
+                            <div class="card-body p-4">
+                                <div class="text-center">
+                                    <h5 class="text-primary">Mi Perfil</h5>
+                                    <p class="text-muted">Gestiona tu información personal</p>
+                                </div>
+                                <div class="text-center">
+                                    <img src="{% if usuario.foto_perfil %}{{ usuario.foto_perfil.url }}{% else %}{% static 'images/users/user-dummy-img.jpg'%}{% endif %}" 
+                                        alt="Foto de Perfil" class="rounded-circle" width="100" height="100">
+                                </div>
+                                <div class="p-2 mt-4">
+                                    <form method="POST" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <div class="mb-3">
+                                            <label for="{{ form.aNombre.id_for_label }}" class="form-label">Nombre</label>
+                                            {{ form.aNombre }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="{{ form.aApellido.id_for_label }}" class="form-label">Apellido/s</label>
+                                            {{ form.aApellido }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="{{ form.aTelefono.id_for_label }}" class="form-label">Teléfono</label>
+                                            {{ form.aTelefono }}
+                                        </div>
+                                        <div class="mb-3 form-check">
+                                            {{ form.usar_mismo_numero }}
+                                            <label for="{{ form.usar_mismo_numero.id_for_label }}" class="form-check-label">Usar el mismo número de teléfono para WhatsApp</label>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="{{ form.aWhatsapp.id_for_label }}" class="form-label">WhatsApp</label>
+                                            {{ form.aWhatsapp }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="{{ form.email.id_for_label }}" class="form-label">Correo Electrónico</label>
+                                            {{ form.email }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="{{ form.aEmpresa.id_for_label }}" class="form-label">Empresa</label>
+                                            {{ form.aEmpresa }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="{{ form.foto_perfil.id_for_label }}" class="form-label">Foto de Perfil</label>
+                                            {{ form.foto_perfil }}
+                                            <input type="hidden" name="foto_recortada" id="fotoRecortada">
+                                        </div>
+                                        <div class="mt-4">
+                                            <button class="btn btn-secondary w-100" type="submit">Actualizar Perfil</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4">
+                            <div class="card-body p-4 text-center">
+                                <h5 class="text-primary">Código QR</h5>
+                                <p class="text-muted">Este QR es único para ti</p>
+                                <img src="data:image/png;base64,{{ qr_base64 }}" alt="Código QR">
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button onclick="imprimirGafete()" class="btn btn-primary w-100">
+                                Imprimir Gafete
+                            </button>
+                        </div>                                                       
+                        
+                        <div class="text-center mt-4">
+                            <a href="{% url 'mis_compras' %}" class="btn btn-success w-100">Ver Mis Compras</a>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <form method="POST" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button class="btn btn-danger w-100">Cerrar Sesión</button>
+                            </form>
+                        </div>
+
+                        <br>
+                    </div>
+                </div>
+                
+                <div class="modal fade" id="cropperModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Recorta tu imagen</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                        <img id="imageToCrop" style="max-width: 100%; display: block; margin: auto;">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="cropAndSave" class="btn btn-primary">Usar imagen recortada</button>
+                    </div>
+                    </div>
+                </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {% block footer %}
+        {% include "web/layouts/footer.html" %}
+    {% endblock footer %}
+{% endblock content %}    
+{% block scripts %}
+
+<link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
+
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script>
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: "{{ message }}",
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: "{{ message }}",
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+    <script>
+        function imprimirGafete() {
+            var win = window.open("{% url 'descargar_gafete' %}", "_blank");
+            win.onload = function () {
+                win.print();
+            };
+        }
+</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const checkbox = document.getElementById("id_usar_mismo_numero");
+            const telefono = document.getElementById("id_aTelefono");
+            const whatsapp = document.getElementById("id_aWhatsapp");
+
+            function syncFields() {
+                if (checkbox.checked) {
+                    whatsapp.value = telefono.value;
+                    whatsapp.setAttribute("readonly", "readonly");
+                } else {
+                    whatsapp.removeAttribute("readonly");
+                }
+            }
+
+            checkbox.addEventListener("change", syncFields);
+            telefono.addEventListener("input", function () {
+                if (checkbox.checked) {
+                    whatsapp.value = telefono.value;
+                }
+            });
+
+            syncFields();
+        });
+</script>
+<script>
+    let cropper;
+    const input = document.getElementById('id_foto_perfil');
+    const cropperModalInstance = new bootstrap.Modal(document.getElementById('cropperModal'));
+    const image = document.getElementById('imageToCrop');
+    const output = document.getElementById('fotoRecortada');
+
+    input.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            image.src = e.target.result;
+            cropperModalInstance.show();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    document.getElementById('cropperModal').addEventListener('shown.bs.modal', function () {
+        cropper = new Cropper(image, {
+            aspectRatio: 1,
+            viewMode: 1
+        });
+    });
+
+    document.getElementById('cropperModal').addEventListener('hidden.bs.modal', function () {
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+    });
+
+    document.getElementById('cropAndSave').addEventListener('click', function () {
+        const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+        output.value = canvas.toDataURL('image/png');
+        cropperModalInstance.hide();
+    });</script>
+{% endblock scripts %}

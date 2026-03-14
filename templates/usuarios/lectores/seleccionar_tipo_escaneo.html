@@ -1,0 +1,27 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Seleccionar Tipo de Escaneo{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Escaneo" title="Seleccionar Tipo" %}
+            {% endblock pagetitle %}
+            
+            <div class="row">
+                <div class="col-lg-4">
+                    <a href="{% url 'escaneo_evento' %}" class="btn btn-primary w-100">Escanear Entrada a Evento</a>
+                </div>
+                <div class="col-lg-4">
+                    <a href="{% url 'escaneo_actividad' %}" class="btn btn-primary w-100">Escanear Entrada a Actividad</a>
+                </div>
+                <div class="col-lg-4">
+                    <a href="{% url 'escaneo_stand' %}" class="btn btn-primary w-100">Escanear Visita a Stand</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

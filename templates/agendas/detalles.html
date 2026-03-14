@@ -1,0 +1,50 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Detalles de la Agenda{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Agendas" title="Detalles de la Agenda" %}
+            {% endblock pagetitle %}
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Información de la Agenda</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Nombre:</strong> {{ agenda.aNombre }}</p>
+                            <p><strong>Evento:</strong> {{ agenda.idEvento.aNombre }}</p>
+                            <p><strong>¿Visible para todos?:</strong> {{ agenda.lVisible|yesno:"Sí,No" }}</p>
+                            <p><strong>¿Agenda Activa?:</strong> {{ agenda.lActivo|yesno:"Sí,No" }}</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Actividades en la Agenda</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul>
+                                {% for agenda_actividad in actividades %}
+                                <li>{{ agenda_actividad.idActividad.aNombre }} - {{ agenda_actividad.idActividad.fFechaHoraInicio|date:"d/m/Y H:i" }}</li>
+                                {% empty %}
+                                <p>No hay actividades asignadas a esta agenda.</p>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>                    
+                </div>
+                <div class="col-lg-4">
+                    <div class="text-end mb-3">
+                        <a href="{% url 'listado_agendas' %}" class="btn btn-secondary">Volver al Listado</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

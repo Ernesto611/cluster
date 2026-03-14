@@ -1,0 +1,509 @@
+{% extends "web/layouts/base.html" %}
+{% load static %}
+{% block title %}{{ evento.categoria.aNombre }}{% endblock title %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+<style>
+
+html { scroll-behavior: smooth; }
+
+.banner {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 400px; 
+}
+
+@media (max-width: 768px) {
+  .banner {
+    background-size: contain;
+    background-position: center top;
+    min-height: 250px;
+    padding: 20px 0;
+  }
+  .banner.cover-mobile {
+    background-size: cover;
+    background-position: center center;
+    min-height: 300px;
+  }
+  .banner-content { padding: 15px; }
+  .banner-content .content-right .content h2 {
+    font-size: 24px !important;
+  }
+  .banner-content .content-left .counter { font-size: 48px; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .banner { min-height: 350px; }
+}
+
+.banner-overlay {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex; align-items: center; justify-content: center;
+}
+.banner-content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+@media (max-width: 768px) {
+  .banner-mobile-img { display: block; width: 100%; height: auto; max-height: 300px; object-fit: cover; object-position: center; }
+  .banner-mobile-img + .banner-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+}
+@media (min-width: 769px) { .banner-mobile-img { display: none; } }
+
+.banner .content-right:before { width: 200%; }
+
+.cta-buttons {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; align-items: center;
+}
+.btn-scroll, .btn-share, .btn-copy {
+  padding: 8px 14px; border-radius: 8px; border: 0; font-weight: 600; cursor: pointer; text-decoration: none;
+}
+.btn-scroll { background: #0d6efd; color: #fff; }
+.btn-share  { background: #17a2b8; color: #fff; }
+.btn-copy   { background: #6c757d; color: #fff; }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+
+<section class="banner" style="background-image: url('{{ evento.aImagen.url }}');">
+  <div class="banner-overlay">
+    <div class="banner-content">
+      <div class="content-left">
+        <span class="counter" data-count="{{ dia_inicio_counter }}">0</span>
+        <p>{{ mes_año_inicio }}</p>
+      </div>
+      <div class="content-right">
+        <div class="content">
+          <ul></ul>
+          <ul>
+            <h2 style="font-size: 40px; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; color: #81f5de; width: 100%;">{{ evento.aNombre }}</h2>
+
+            <div class="cta-buttons">
+              {% if entradas %}
+              <a href="#precios" class="btn-scroll" id="scrollToPrecios">
+                <i class="fa fa-shopping-cart" aria-hidden="true"></i> Opciones de compra
+              </a>
+              {% endif %}
+
+              <button type="button" class="btn-share" id="shareBtn">
+                <i class="fa fa-share-alt" aria-hidden="true"></i> Compartir
+              </button>
+
+              <button type="button" class="btn-copy" id="copyLinkBtn">
+                <i class="fa fa-link" aria-hidden="true"></i> Copiar enlace
+              </button>
+            </div>
+
+            <li style="text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; color: #81f5de;">
+              <span class="flaticon-tool"></span>{{ fecha_formateada }}
+            </li>
+            <li style="text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; color: #81f5de;">
+              <span class="flaticon-signs"></span>{{ evento.dCalle }} {{ evento.dNumero }}, {{ evento.dColonia }}, {{ evento.dCP }}, 
+              {{ evento.dCiudad }}, {{ evento.dEstado }}.
+            </li>
+            <br>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="about padding-120">
+  <div class="container">
+    <div class="section-header text-center">
+      <h2>Acerca de {{ evento.aNombre }}</h2>
+    </div>
+    <p>{{ evento.aDescripcion }}</p>
+  </div>
+</section>
+
+{% if expositores %}
+<section class="speakers speakers-five">
+  <div class="overlay">
+    <div class="section-header text-center">
+      <h3>Nuestros conferencistas</h3>
+    </div>
+    <div class="speaker-items">
+      {% for expositor in expositores %}
+      <div class="speaker-item">
+        <div class="speaker-image dh-container">
+          <img src="{{ expositor.aFoto.url }}" alt="speaker image" class="img-responsive">
+          <div class="speaker-content-bg dh-overlay">
+            <div class="speaker-content">
+              <div class="content">
+                <h4><a href="{% url 'expositor_detalles' expositor.idExpositor %}">{{ expositor.aNombre }} {{ expositor.aApellido }}</a></h4>
+                <ul class="speaker-social">
+                  {% if expositor.aFacebook %}
+                  <li><a href="{{ expositor.aFacebook }}" target="_blank"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+                  {% endif %}
+                  {% if expositor.aTwitter %}
+                  <li><a href="{{ expositor.aTwitter }}" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+                  {% endif %}
+                  {% if expositor.aInstagram %}
+                  <li><a href="{{ expositor.aInstagram }}" target="_blank"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+                  {% endif %}
+                  {% if expositor.aSitioWeb %}
+                  <li><a href="{{ expositor.aSitioWeb }}" target="_blank"><i class="fa fa-globe" aria-hidden="true"></i></a></li>
+                  {% endif %}
+                  {% if expositor.aEmail %}
+                  <li><a href="mailto:{{ expositor.aEmail }}"><i class="fa fa-envelope" aria-hidden="true"></i></a></li>
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if patrocinadores %}
+<section class="sponsor">
+  <div class="overlay">
+    <div class="container">
+      <div class="section-header text-center">
+        <h3>Nuestros patrocinadores</h3>
+      </div>
+      <div class="sponsor-grid">
+        {% for patrocinador in patrocinadores %}
+        <a href="{% url 'patrocinador_detalles' patrocinador.idPatrocinador %}">
+          <img src="{{ patrocinador.aFoto.url }}" alt="Patrocinador">
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if stands %}
+<section id="sponsor" class="sponsor sponsor-uhv event-sponsor-page padding-120">
+  <div class="container">
+    <div class="section-header text-center">
+      <h3>Nuestros stands</h3>
+    </div>
+    <div class="sponsor-grid">
+      {% for stand in stands %}
+      <a href="{% url 'stand_detalles' stand.idStand %}">
+        <img src="{{ stand.aImagen.url }}" alt="Stand">
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if agendas %}
+{% if evento.lAgendaVisible or request.user.is_authenticated %}
+<section class="schedules padding-120">
+  <div class="container">
+    <div class="section-header text-center">
+      <h3>Programación del Evento</h3>
+    </div>
+
+    {% for agenda in agendas %}
+    <div class="schedule-tabs">
+      <h4>{{ agenda.agenda }}</h4>
+
+      <ul class="nav nav-tabs" role="tablist" id="myTab-{{ forloop.counter }}">
+        {% for fecha, actividades in agenda.dias.items %}
+        <li class="nav-item" role="presentation">
+          <a href="#day-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" data-bs-toggle="tab"
+             data-bs-target="#day-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" type="button" role="tab"
+             aria-controls="day-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" 
+             {% if forloop.first %}class="active" aria-selected="true"{% else %}aria-selected="false"{% endif %}>
+            Día-{{ forloop.counter }}
+            <span>{{ fecha }}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <div class="tab-content" id="myTabContent-{{ forloop.counter }}">
+        {% for fecha, actividades in agenda.dias.items %}
+        <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %}" id="day-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+          <div class="schedule-table table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th class="time">Hora</th>
+                  <th class="session">Actividad</th>
+                  <th class="spekers">Encargado</th>
+                  <th class="venue">Lugar</th>
+                  <th class="action">Opciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for actividad in actividades %}
+                <tr>
+                  <td class="time"><span><i class="fa fa-clock-o" aria-hidden="true"></i></span>{{ actividad.hora }}</td>
+                  <td class="session"><span><i class="fa fa-list-alt" aria-hidden="true"></i></span>{{ actividad.nombre }}</td>
+                  <td class="spekers"><span><i class="fa fa-microphone" aria-hidden="true"></i></span>{{ actividad.expositor }}</td>
+                  <td class="venue"
+                      {% if actividad.latitud and actividad.longitud %}
+                      onclick="redirectToGoogleMaps2({{ actividad.latitud }}, {{ actividad.longitud }})"
+                      style="cursor: pointer;"
+                      {% endif %}>
+                    <span><i class="fa fa-home" aria-hidden="true"></i></span>
+                    {{ actividad.lugar }}
+                  </td>
+                  <td class="action">
+                    {% if not evento_terminado %}
+                      {% if actividad.boton == "Comprar pase" %}
+                        <a href="{% url 'pago_actividad' actividad.id %}" class="btn btn-primary">Comprar pase</a>
+                      {% elif actividad.boton == "Registrarse" %}
+                        <a href="{% url 'registro_acompañantes_actividad' actividad.id %}" class="btn btn-success">Registrarse</a>
+                      {% elif actividad.boton == "Editar acompañantes" %}
+                        <a href="{% url 'editar_acompañantes' actividad.id %}" class="btn btn-warning">Editar acompañantes</a>
+                      {% endif %}
+                    {% else %}
+                      <a>Este evento ya finalizo</a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endif %}
+
+{% if entradas %}
+<section id="precios" class="pricing">
+  <div class="overlay">
+    <div class="container">
+      <div class="section-header text-center">
+        <h3>Precios</h3>
+      </div>
+      <div class="pricing-items">
+        <div class="row">
+          {% for entrada in entradas %}
+          <div class="col-lg-4 col-md-6 col-xs-12">
+            <div class="pricing-item third">
+              <div class="pricing-header">
+                <h3 class="name">{{ entrada.aNombre }}</h3>
+                <h2 class="amount"><sup>$</sup>{{ entrada.nCosto }}</h2>
+              </div>
+              <div class="pricing-options">
+                {% for actividad in entrada.actividades %}
+                <p><span><i class="fa fa-check" aria-hidden="true"></i></span> {{ actividad.aNombre }}</p>
+                {% endfor %}
+              </div>
+              <div class="pricing-button">
+                {% if not evento_terminado %}
+                  {% if not entrada.disponible %}
+                    <a class="btn-disabled" style="background-color: #ccc; color: #666; cursor: not-allowed; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                      Sin lugares disponibles
+                    </a>
+                  {% elif entrada.nCosto > 0 and entrada.idEntrada %}
+                    <a href="{% url 'pago_entrada' entrada.idEntrada %}">Compra ahora</a>
+                  {% elif entrada.nCosto == 0 %}
+                    {% if entrada.idEntrada %}
+                      <a href="{% url 'registro_gratuito' entrada.idEntrada %}">Regístrate ahora</a>
+                    {% else %}
+                      <a href="{% url 'registro_gratuito_evento' evento.idEvento %}">Regístrate ahora</a>
+                    {% endif %}
+                  {% endif %}
+                {% else %}
+                  <a>Este evento ya finalizó</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="home-map">
+  <div id="home-map" class="map"></div>
+</section>
+
+{% block footer %}
+  {% include "web/layouts/footer.html" %}
+{% endblock footer %}
+
+{% endblock content %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+<script src="{% static 'js/maps.js' %}"></script>
+{% for message in messages %}
+  {% if message.tags == 'success' %}
+  <script>
+    Swal.fire({ icon: 'success', iconColor: '#0ab39c', title: "{{ message }}", showConfirmButton: false, timer: 1500 });
+</script>
+  {% elif message.tags == 'error' %}
+  <script>
+    Swal.fire({ icon: 'error', title: "{{ message }}", showConfirmButton: false, timer: 1500 });
+</script>
+  {% endif %}
+{% endfor %}
+{% endblock extra_js %}
+
+{% block scripts %}
+<script type="text/javascript">
+  var eventLatitude = parseFloat("{{ evento.dLatitud|stringformat:".6f" }}");
+  var eventLongitude = parseFloat("{{ evento.dLongitud|stringformat:".6f" }}");
+
+  var map = L.map('home-map').setView([eventLatitude, eventLongitude], 15);
+  addTiles(map);
+  var marker = L.marker([eventLatitude, eventLongitude]).addTo(map);
+
+  function redirectToGoogleMaps(lat, lng) {
+      var url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+      window.open(url, '_blank');
+  }
+
+  if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+          map.on('click', function() {
+              redirectToGoogleMaps(eventLatitude, eventLongitude);
+          });
+      }, function(error) {
+          map.on('click', function() {
+              redirectToGoogleMaps(eventLatitude, eventLongitude);
+          });
+      });
+  } else {
+      map.on('click', function() {
+          redirectToGoogleMaps(eventLatitude, eventLongitude);
+      });
+  }</script>
+
+<script type="text/javascript">
+
+  function redirectToGoogleMaps2(lat, lng) {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          var userLat = position.coords.latitude;
+          var userLng = position.coords.longitude;
+          var url = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${lat},${lng}&travelmode=driving`;
+          window.open(url, '_blank');
+        },
+        function(error) {
+          var url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+          window.open(url, '_blank');
+        }
+      );
+    } else {
+      var url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+      window.open(url, '_blank');
+    }
+  }</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const shareBtn = document.getElementById('shareBtn');
+  const copyBtn  = document.getElementById('copyLinkBtn');
+
+  const pageUrl    = window.location.href.split('#')[0];
+  const encodedUrl = encodeURIComponent(pageUrl);
+  const title      = "{{ evento.aNombre|escapejs }}";
+  const shareText  = `Te invito al evento "${title}"`;
+
+  function openShareModal() {
+    Swal.fire({
+      title: 'Compartir evento',
+      html: `
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+          <button id="waBtn" class="swal2-confirm" style="background:#25D366;min-width:180px">
+            <i class="fa fa-whatsapp" aria-hidden="true"></i> WhatsApp
+          </button>
+          <button id="fbBtn" class="swal2-confirm" style="background:#1877F2;min-width:180px">
+            <i class="fa fa-facebook" aria-hidden="true"></i> Facebook
+          </button>
+          <button id="igBtn" class="swal2-confirm" style="background:#E4405F;min-width:180px">
+            <i class="fa fa-instagram" aria-hidden="true"></i> Instagram
+          </button>
+          <button id="nativeBtn" class="swal2-confirm" style="background:#6f42c1;min-width:180px">
+            <i class="fa fa-share-alt" aria-hidden="true"></i> Compartir del sistema
+          </button>
+          <button id="cpyBtn" class="swal2-cancel" style="background:#6c757d;color:#fff;min-width:180px">
+            <i class="fa fa-link" aria-hidden="true"></i> Copiar enlace
+          </button>
+        </div>
+        <p style="margin-top:12px;font-size:13px;opacity:.85">
+          Tip: Instagram no admite compartir enlaces directamente desde web; copia el enlace y pégalo en tu publicación o historia.
+        </p>
+      `,
+      showConfirmButton: false,
+      showCancelButton: false,
+      didOpen: () => {
+        const wa  = document.getElementById('waBtn');
+        const fb  = document.getElementById('fbBtn');
+        const ig  = document.getElementById('igBtn');
+        const nat = document.getElementById('nativeBtn');
+        const cpy = document.getElementById('cpyBtn');
+
+        if (wa) wa.addEventListener('click', () => {
+          const txt = encodeURIComponent(`${shareText} ${pageUrl}`);
+          window.open(`https://wa.me/?text=${txt}`, '_blank', 'noopener');
+        });
+
+        if (fb) fb.addEventListener('click', () => {
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank', 'noopener');
+        });
+
+        if (ig) ig.addEventListener('click', async () => {
+          try { await navigator.clipboard.writeText(`${shareText} ${pageUrl}`); } catch(e) {}
+          window.open('https://www.instagram.com/', '_blank', 'noopener');
+          Swal.close();
+          Swal.fire({ icon:'success', iconColor:'#0ab39c', title:'Enlace copiado. Pégalo en Instagram.', timer:1800, showConfirmButton:false });
+        });
+
+        if (nat) nat.addEventListener('click', async () => {
+          if (navigator.share) {
+            try { await navigator.share({ title, text: shareText, url: pageUrl }); } catch(e) {}
+          } else {
+            Swal.fire({ icon:'info', title:'No compatible', text:'Tu navegador no soporta compartir nativo.', timer:1500, showConfirmButton:false });
+          }
+        });
+
+        if (cpy) cpy.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(pageUrl);
+            Swal.fire({ icon:'success', iconColor:'#0ab39c', title:'¡Enlace copiado!', timer:1300, showConfirmButton:false });
+          } catch(e) {
+            Swal.fire({ icon:'error', title:'No se pudo copiar el enlace', timer:1500, showConfirmButton:false });
+          }
+        });
+      }
+    });
+  }
+
+  if (shareBtn) shareBtn.addEventListener('click', openShareModal);
+
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(pageUrl);
+        Swal.fire({ icon:'success', iconColor:'#0ab39c', title:'¡Enlace copiado!', timer:1300, showConfirmButton:false });
+      } catch(e) {
+        Swal.fire({ icon:'error', title:'No se pudo copiar el enlace', timer:1500, showConfirmButton:false });
+      }
+    });
+  }
+});</script>
+
+{% endblock scripts %}

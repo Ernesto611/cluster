@@ -1,0 +1,451 @@
+{% load static %}
+{% block header %}
+<style>
+    
+.main-menu > div > ul > li {
+    position: relative;
+}
+
+.main-menu > div > ul > li > ul {
+    display: none !important;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 0;
+    z-index: 1000;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.main-menu > div > ul > li.active > ul {
+    display: block !important;
+}
+
+.main-menu > div > ul > li:hover > ul,
+.scrollbar.style-scroll-v3 > li:hover > .submenu-horizontal {
+    display: none !important;
+}
+
+.main-menu > div > ul > li:not(.active):hover > ul {
+    display: none !important;
+}
+
+.main-menu > div > ul > li > ul > li > a {
+    padding: 8px 12px;
+    display: block;
+    color: black;
+    text-decoration: none;
+}
+
+.scrollbar.style-scroll-v3 > li {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.submenu-horizontal {
+    display: none !important;
+    position: static !important;
+    background-color: #f8f9fa;
+    border-left: 3px solid #007bff;
+    margin-left: 15px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    border-radius: 0 4px 4px 0;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    width: auto !important;
+    min-width: auto !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    z-index: auto !important;
+}
+
+.scrollbar.style-scroll-v3 > li.estado-active > .submenu-horizontal {
+    display: block !important;
+}
+
+.scrollbar.style-scroll-v3 > li:not(.estado-active):hover > .submenu-horizontal {
+    display: none !important;
+}
+
+.submenu-horizontal li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.submenu-horizontal li a {
+    padding: 8px 16px;
+    display: block;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 1px solid #dee2e6;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.submenu-horizontal li:last-child a {
+    border-bottom: none;
+}
+
+.main-menu > div > ul > li > ul > li:hover > a {
+    background-color: #f5f5f5;
+}
+
+.submenu-horizontal li:hover > a {
+    background-color: #e9ecef;
+    color: #333;
+    padding-left: 20px;
+}
+
+.scrollbar.style-scroll-v3 > li > a {
+    padding: 10px 12px;
+    display: block;
+    color: black;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #eee;
+}
+
+.scrollbar.style-scroll-v3 > li > a:hover {
+    background-color: #f5f5f5;
+}
+
+.scrollbar.style-scroll-v3 > li.estado-active > a {
+    background-color: #007bff;
+    color: white;
+    font-weight: 500;
+}
+
+.scrollbar.style-scroll-v3 > li > a::after {
+    content: "▶";
+    float: right;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+    opacity: 0.6;
+}
+
+.scrollbar.style-scroll-v3 > li.estado-active > a::after {
+    transform: rotate(90deg);
+    opacity: 1;
+}
+
+@media (min-width: 992px) {
+    
+    .main-menu > div > ul > li > ul {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+    }
+
+    .scrollbar.style-scroll-v3 {
+        min-width: 220px;
+    }
+
+    .submenu-horizontal {
+        position: static !important;
+        margin-left: 20px;
+        margin-top: 8px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        box-shadow: inset 2px 0 4px rgba(0, 123, 255, 0.1);
+        width: calc(100% - 20px) !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+    }
+}
+
+@media (max-width: 991px) {
+    
+    .main-menu > div > ul > li > ul {
+        position: static !important;
+        display: none !important;
+        width: 100%;
+        border: none;
+        background-color: #f8f9fa;
+        margin-top: 0;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .main-menu > div > ul > li.active > ul {
+        display: block !important;
+    }
+
+    .scrollbar.style-scroll-v3 > li > a {
+        padding: 14px 16px;
+        border-bottom: 1px solid #dee2e6;
+        background-color: #e9ecef;
+        font-weight: 500;
+    }
+
+    .scrollbar.style-scroll-v3 > li.estado-active > a {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .submenu-horizontal {
+        position: static !important;
+        margin-left: 10px;
+        margin-top: 0;
+        margin-bottom: 5px;
+        background-color: white;
+        border-left: 4px solid #007bff;
+        width: calc(100% - 10px) !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        z-index: auto !important;
+    }
+    
+    .submenu-horizontal li a {
+        padding: 12px 20px;
+        font-size: 14px;
+        color: #666;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .submenu-horizontal li:last-child a {
+        border-bottom: none;
+    }
+
+    .scrollbar.style-scroll-v3 > li > a::after {
+        content: "▼";
+        font-size: 12px;
+        transition: transform 0.3s ease;
+    }
+    
+    .scrollbar.style-scroll-v3 > li.estado-active > a::after {
+        transform: rotate(180deg);
+    }
+
+    .scrollbar.style-scroll-v3 > li {
+        margin-bottom: 2px;
+    }
+}
+
+@media (min-width: 992px) {
+    .navbar-expand-lg .navbar-collapse {
+        display: flex !important;
+    }
+}
+
+.main-menu ul ul {
+    display: none !important;
+}
+
+.main-menu > div > ul > li.active > ul {
+    display: block !important;
+}
+
+.scrollbar.style-scroll-v3 > li .submenu-horizontal {
+    display: none !important;
+}
+
+.scrollbar.style-scroll-v3 > li.estado-active > .submenu-horizontal {
+    display: block !important;
+}
+
+.submenu-horizontal {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+        margin-top: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 300px;
+        margin-top: 5px;
+    }
+}
+
+.scrollbar.style-scroll-v3 > li.estado-active > .submenu-horizontal {
+    animation: slideDown 0.3s ease-out;
+}
+</style>
+<header class="style-2">
+    <div class="menu-fixed bgc-1">
+        <nav class="navbar navbar-expand-lg menu-fixed bgc-1" style="background-color: #d0d3d4;">
+            <div class="container">
+                <a class="navbar-brand" href="{% url 'index' %}">
+                    {% if navbar_logo_url %}
+                        <img src="{{ navbar_logo_url }}" alt="logo" class="img-responsive">
+                    {% else %}
+                        <img src="{% static 'web/images/logo_cluster2.png' %}" alt="logo" class="img-responsive">
+                    {% endif %}
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <div class="main-menu">
+                        <div class="menu-left">
+                            <ul>
+                                {% if categorias_eventos %}
+                                    {% for categoria in categorias_eventos %}
+                                        <li>
+                                            <a href="#" style="color: black;">{{ categoria.nombre }}</a>
+                                            <ul class="scrollbar style-scroll-v3" id="style-scroll-{{ categoria.nombre|slugify }}">
+                                                {% for sub in categoria.subcategorias %}
+                                                    <li>
+                                                        <a href="#">{{ sub.nombre }}</a>
+                                                        {% if sub.eventos %}
+                                                            <ul class="submenu-horizontal">
+                                                                {% for evento in sub.eventos %}
+                                                                    <li>
+                                                                        <a href="{% url 'evento_detalles' evento.idEvento %}">
+                                                                            {{ evento.aNombre }}
+                                                                        </a>
+                                                                    </li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        {% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </li>
+                                    {% endfor %}
+                                {% endif %}
+                                {% if archivos_descargables %}
+                                <li>
+                                    <a href="#" style="color: black;">Descargables</a>
+                                    <ul class="scrollbar" id="style-scroll-v3">
+                                        {% for archivo in archivos_descargables %}
+                                            <li>
+                                                <a href="{{ archivo.archivo.url }}" download>
+                                                    ({{ archivo.extension }}) {{ archivo.titulo }}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                                {% endif %}  
+                                {% if archivos_descargables_evento %}
+                                <li>
+                                    <a href="#" style="color: black;">Descargables del evento</a>
+                                    <ul class="scrollbar" id="style-scroll-v3">
+                                        {% for archivo in archivos_descargables %}
+                                            <li>
+                                                <a href="{{ archivo.archivo.url }}" download>
+                                                    ({{ archivo.extension }}) {{ archivo.titulo }}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                                {% endif %}
+                                <li>
+                                    {% if user.is_authenticated %}
+                                    <a href="{% url 'perfil' %}" style="color: black;">Mi perfil</a>
+                                    {% else %}
+                                    <a href="{% url 'login' %}" style="color: black;">Iniciar sesión</a>
+                                    {% endif %}
+                                </li>
+                                {% if not user.is_authenticated %}
+                                <li>
+                                    <a href="{% url 'registro' %}" style="color: black;">Registrate</a>
+                                </li> 
+                                {% endif %}                                                                                          
+                            </ul>
+                        </div>
+                        <div class="menu-right">
+                            <ul class="header-cart-ticket-option">                         
+                                {% if user.is_authenticated %}
+                                    {% if user.tipo_usuario in "super_administrador,administrador" %}
+                                        <li><a href="{% url 'administracion_redirect' %}" class="menu-button" style="color: black;">Administración</a></li>
+                                    {% endif %}
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, inicializando menús por clic');
+
+    const activarMenusPorClick = () => {
+
+        const menuItems = document.querySelectorAll('.main-menu > div > ul > li');
+        console.log('Menu items encontrados:', menuItems.length);
+
+        menuItems.forEach(function(item) {
+            const link = item.querySelector('a');
+            const submenu = item.querySelector('ul');
+
+            if (submenu) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Click en menú principal:', link.textContent.trim());
+
+                    menuItems.forEach(function(otherItem) {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('active');
+                        }
+                    });
+
+                    item.classList.toggle('active');
+                    console.log('Menú activo:', item.classList.contains('active'));
+                });
+            }
+        });
+
+        const estadoItems = document.querySelectorAll('.scrollbar.style-scroll-v3 > li');
+        console.log('Estado items encontrados:', estadoItems.length);
+
+        estadoItems.forEach(function(item, index) {
+            const link = item.querySelector('a');
+            const submenu = item.querySelector('.submenu-horizontal');
+
+            console.log(`Estado ${index}:`, item.textContent.trim(), 'tiene submenu:', !!submenu);
+
+            if (submenu) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Click en estado:', item.textContent.trim());
+
+                    estadoItems.forEach(function(otherItem) {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('estado-active');
+                        }
+                    });
+
+                    item.classList.toggle('estado-active');
+                    console.log('Estado activo:', item.classList.contains('estado-active'));
+                });
+            }
+        });
+    };
+
+    activarMenusPorClick();
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.main-menu')) {
+            const allItems = document.querySelectorAll('.main-menu li');
+            allItems.forEach(function(item) {
+                item.classList.remove('active', 'estado-active');
+            });
+        }
+    });
+
+    window.addEventListener('resize', function() {
+        const allItems = document.querySelectorAll('.main-menu li');
+        allItems.forEach(function(item) {
+            item.classList.remove('active', 'estado-active');
+        });
+    });
+});</script>
+{% endblock header %}

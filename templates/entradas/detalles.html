@@ -1,0 +1,51 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}Detalles de Entrada{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Entradas" title="Detalles de la Entrada" %}
+            {% endblock pagetitle %}
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Información de la Entrada</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Nombre:</strong> {{ entrada.aNombre }}</p>
+                    <p><strong>Evento:</strong> {{ entrada.idEvento.aNombre }}</p>
+                    <p><strong>Costo:</strong> ${{ entrada.nCosto }}</p>
+                    <p><strong>Cantidad:</strong> {{ entrada.nCantidad }}</p>
+                    <p><strong>Vendidas:</strong> {{ entrada.nVendidas }}</p>
+                    <p><strong>Estado:</strong> 
+                        {% if entrada.lActivo %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactivo</span>
+                        {% endif %}
+                    </p>
+
+                    {% if actividades %}
+                    <h5>Actividades Incluidas</h5>
+                    <ul>
+                        {% for actividad in actividades %}
+                        <li>{{ actividad.idActividad.aNombre }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No hay actividades incluidas en esta entrada.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="text-end">
+                <a href="{% url 'listado_entradas' %}" class="btn btn-secondary">Volver</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

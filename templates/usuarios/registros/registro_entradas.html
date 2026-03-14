@@ -1,0 +1,125 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}Compras de Entradas{% endblock title %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Compras" title="Registro de Compras de Entradas" %}
+
+            <form method="get" class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <input type="text" name="q" class="form-control" placeholder="Buscar por nombre o correo..." value="{{ q|default_if_none:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="evento" class="form-select" id="evento-select">
+                        <option value="">Todos los eventos</option>
+                        {% for evento in eventos %}
+                            <option value="{{ evento.idEvento }}" {% if evento_id == evento.idEvento|stringformat:"s" %}selected{% endif %}>{{ evento.aNombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="entrada" class="form-select" id="entrada-select" {% if not evento_id %}disabled{% endif %}>
+                        <option value="">Todas las entradas</option>
+                        {% for entrada in entradas %}
+                            {% if not evento_id or entrada.idEvento.idEvento|stringformat:"s" == evento_id %}
+                                <option value="{{ entrada.idEntrada }}" {% if entrada_id == entrada.idEntrada|stringformat:"s" %}selected{% endif %}>{{ entrada.aNombre }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="metodo_pago" class="form-select">
+                        <option value="">Todos los métodos</option>
+                        <option value="paypal" {% if metodo_pago == 'paypal' %}selected{% endif %}>PayPal</option>
+                        <option value="stripe" {% if metodo_pago == 'stripe' %}selected{% endif %}>Tarjeta</option>
+                        <option value="openpay" {% if metodo_pago == 'openpay' %}selected{% endif %}>OpenPay</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100"><i class="ri-filter-line"></i></button>
+                </div>
+            </form>
+
+            <div class="card">
+                <div class="card-body pt-0">
+                    <div class="table-responsive table-card mt-3">
+                        <table class="table table-nowrap align-middle">
+                            <thead class="text-muted table-light">
+                                <tr class="text-uppercase fs-13">
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                    <th>Entrada</th>
+                                    <th>Método</th>
+                                    <th>Monto</th>
+                                    <th>Estado</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for compra in compras %}
+                                <tr>
+                                    <td>{{ compra.usuario.aNombre }}</td>
+                                    <td>{{ compra.usuario.email }}</td>
+                                    <td>{{ compra.entrada.aNombre }}</td>
+                                    <td>{{ compra.get_metodo_pago_display }}</td>
+                                    <td>${{ compra.monto_pago }}</td>
+                                    <td>
+                                        {% if compra.status_pago == 'pendiente' %}
+                                            <span class="badge bg-warning">Pendiente</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Pagado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ compra.fecha_compra|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No hay compras registradas.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const eventoSelect = document.getElementById("evento-select");
+        const entradaSelect = document.getElementById("entrada-select");
+
+        eventoSelect.addEventListener("change", function () {
+            entradaSelect.innerHTML = '<option value="">Todas las entradas</option>';
+
+            if (!this.value) {
+                entradaSelect.disabled = true;
+                return;
+            }
+
+            fetch(`/usuarios/ajax/entradas-por-evento/?evento_id=${this.value}`)
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(ent => {
+                        const opt = document.createElement("option");
+                        opt.value = ent.idEntrada;
+                        opt.textContent = ent.aNombre;
+                        entradaSelect.appendChild(opt);
+                    });
+                    entradaSelect.disabled = false;
+                });
+        });
+
+        if (eventoSelect.value) {
+            eventoSelect.dispatchEvent(new Event('change'));
+        }
+    });</script>
+{% endblock %}

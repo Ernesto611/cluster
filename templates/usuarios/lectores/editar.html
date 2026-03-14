@@ -1,0 +1,143 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Editar Lector{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Lectores" title="Editar Lector" %}
+
+            <div class="alert alert-info">
+                <h5>Tipos de Lector</h5>
+                <ul>
+                    <li><strong>Lector General:</strong> Puede escanear entradas a todos los eventos, actividades y stands. No requiere selección.</li>
+                    <li><strong>Lector de Evento Completo:</strong> Puede escanear entradas a un evento y todas sus actividades y stands. Selecciona solo el evento.</li>
+                    <li><strong>Lector de Evento Específico:</strong> Puede escanear solo la entrada a un evento. Selecciona solo el evento.</li>
+                    <li><strong>Lector de Actividades Completo:</strong> Puede escanear entradas a todas las actividades. No requiere selección.</li>
+                    <li><strong>Lector de Actividades Específico:</strong> Puede escanear entradas a actividades dentro de un evento específico. Selecciona solo el evento.</li>
+                    <li><strong>Lector de Stands Completo:</strong> Puede escanear visitas a todos los stands. No requiere selección.</li>
+                    <li><strong>Lector de Stands Específico:</strong> Puede escanear visitas a stands dentro de un evento específico. Selecciona solo el evento.</li>
+                    <li><strong>Lector de Stand Específico:</strong> Puede escanear visitas a un solo stand. Selecciona solo el stand.</li>
+                </ul>
+            </div>
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}<br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="POST" id="lector-form" autocomplete="off">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Datos del Usuario</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre</label>
+                                    {{ form.aNombre }}
+                                    {% for error in form.aNombre.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Apellido/s</label>
+                                    {{ form.aApellido }}
+                                    {% for error in form.aApellido.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Correo Electrónico</label>
+                                    {{ form.email }}
+                                    {% for error in form.email.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Nueva Contraseña (opcional)</label>
+                                    {{ form.password }}
+                                    <div class="form-text">Déjalo vacío si no deseas cambiarla.</div>
+                                    {% for error in form.password.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Configuración del Lector</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Tipo de Lector</label>
+                                    {{ form.tipo_lector }}
+                                    {% for error in form.tipo_lector.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3" id="evento_container" style="display: none;">
+                                    <label class="form-label">Evento</label>
+                                    {{ form.evento }}
+                                    {% for error in form.evento.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3" id="stand_container" style="display: none;">
+                                    <label class="form-label">Stand</label>
+                                    {{ form.stand }}
+                                    {% for error in form.stand.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end mb-3">
+                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                            <a href="{% url 'listar_lectores' %}" class="btn btn-secondary">Cancelar</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tipoLector = document.getElementById('id_tipo_lector');
+        const eventoContainer = document.getElementById('evento_container');
+        const standContainer = document.getElementById('stand_container');
+        const eventoSelect = document.getElementById('id_evento');
+        const standSelect = document.getElementById('id_stand');
+
+        function actualizarVisibilidadCampos() {
+            eventoContainer.style.display = 'none';
+            standContainer.style.display = 'none';
+            eventoSelect.required = false;
+            standSelect.required = false;
+
+            const seleccion = tipoLector.value;
+
+            if (['evento_completo', 'evento_especifico', 'actividades_especifico', 'stands_especifico'].includes(seleccion)) {
+                eventoContainer.style.display = 'block';
+                eventoSelect.required = true;
+            }
+            if (seleccion === 'stand_especifico') {
+                standContainer.style.display = 'block';
+                standSelect.required = true;
+            }
+        }
+
+        tipoLector.addEventListener('change', actualizarVisibilidadCampos);
+        actualizarVisibilidadCampos();
+    });</script>
+{% endblock %}

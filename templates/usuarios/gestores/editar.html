@@ -1,0 +1,85 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Editar Gestor{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Gestores" title="Editar Gestor" %}
+
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                    <script>
+                        Swal.fire({ icon: 'success', iconColor: '#0ab39c', title: "{{ message }}", showConfirmButton: false, timer: 1500 });
+</script>
+                {% elif message.tags == 'error' %}
+                    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                    <script>
+                        Swal.fire({ icon: 'error', title: "{{ message }}", showConfirmButton: false, timer: 1500 });
+</script>
+                {% endif %}
+            {% endfor %}
+
+            <form method="POST" id="admin-form" autocomplete="off">
+                {% csrf_token %}
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Datos del Gestor</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre</label>
+                                    {{ form.aNombre }}
+                                    {% for error in form.aNombre.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Apellido/s</label>
+                                    {{ form.aApellido }}
+                                    {% for error in form.aApellido.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Correo Electrónico</label>
+                                    {{ form.email }}
+                                    {% for error in form.email.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Nueva Contraseña (opcional)</label>
+                                    {{ form.password }}
+                                    <div class="form-text">Déjalo vacío si no deseas cambiarla.</div>
+                                    {% for error in form.password.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                {% if form.fields.aAnadic %}
+                                <div class="mb-3">
+                                    <label class="form-label">Estado ANADIC</label>
+                                    {{ form.aAnadic }}
+                                    {% for error in form.aAnadic.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="text-end mb-3">
+                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                            <a href="{% url 'listar_gestores' %}" class="btn btn-secondary">Cancelar</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

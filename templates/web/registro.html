@@ -1,0 +1,160 @@
+{% extends "web/layouts/base.html" %}
+{% load static %}
+{% load socialaccount %}
+{% block title %}Registro de Usuario{% endblock title %}
+{% block content %}
+<div class="auth-page-wrapper pt-5">
+    <div class="auth-page-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6 col-xl-5">
+                    <div class="card mt-4">
+                        <div class="card-body p-4">
+                            <div class="text-center mt-2">
+                                <h5 class="text-primary">Registro</h5>
+                                <p class="text-muted">Crea tu cuenta</p>
+                            </div>
+                            <div class="p-2 mt-4">
+
+                                {% if form.non_field_errors %}
+                                    <div class="alert alert-danger">
+                                        {% for error in form.non_field_errors %}
+                                            {{ error }}<br>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="{{ form.aNombre.id_for_label }}" class="form-label">Nombre</label>
+                                        {{ form.aNombre }}
+                                        {% for error in form.aNombre.errors %}
+                                            <div class="text-danger">{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="{{ form.aApellido.id_for_label }}" class="form-label">Apellido/s</label>
+                                        {{ form.aApellido }}
+                                        {% for error in form.aApellido.errors %}
+                                            <div class="text-danger">{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="{{ form.aTelefono.id_for_label }}" class="form-label">Teléfono</label>
+                                        {{ form.aTelefono }}
+                                        {% for error in form.aTelefono.errors %}
+                                            <div class="text-danger">{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        {{ form.usar_mismo_numero }}
+                                        <label for="{{ form.usar_mismo_numero.id_for_label }}" class="form-check-label">Usar el mismo número de teléfono para WhatsApp</label>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="{{ form.aWhatsapp.id_for_label }}" class="form-label">WhatsApp</label>
+                                        {{ form.aWhatsapp }}
+                                        {% for error in form.aWhatsapp.errors %}
+                                            <div class="text-danger">{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ form.email.id_for_label }}" class="form-label">Correo</label>
+                                        {{ form.email }}
+                                        {% for error in form.email.errors %}
+                                            <div class="text-danger">{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="{{ form.email_confirm.id_for_label }}" class="form-label">Confirmar correo</label>
+                                        {{ form.email_confirm }}
+                                        {% for error in form.email_confirm.errors %}
+                                            <div class="text-danger">{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="{{ form.aEmpresa.id_for_label }}" class="form-label">Empresa</label>
+                                        {{ form.aEmpresa }}
+                                        {% for error in form.aEmpresa.errors %}
+                                            <div class="text-danger">{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="{{ form.password.id_for_label }}" class="form-label">Contraseña</label>
+                                        {{ form.password }}
+                                        {% for error in form.password.errors %}
+                                            <div class="text-danger">{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="{{ form.password_confirm.id_for_label }}" class="form-label">Confirmar Contraseña</label>
+                                        {{ form.password_confirm }}
+                                        {% for error in form.password_confirm.errors %}
+                                            <div class="text-danger">{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form.captcha }}
+                                    </div>
+                                    <div class="mt-4">
+                                        <button class="btn btn-secondary w-100" type="submit">Registrarse</button>
+                                    </div>
+                                </form>
+                                <div class="text-center my-3">
+                                    <span class="text-muted">o</span>
+                                </div>
+
+                                <a href="{% provider_login_url 'google' process='signup' %}" class="btn btn-outline-primary w-100">
+                                    Continuar con Google
+                                </a>
+                                {% if messages %}
+                                    <div class="mt-3">
+                                        {% for message in messages %}
+                                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card mt-4">
+                        <div class="mt-4 text-center">
+                            <p>¿Ya tienes cuenta? <a href="{% url 'login' %}" class="fw-semibold text-primary text-decoration-underline">Inicia sesión</a></p>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block footer %}
+    {% include "web/layouts/footer.html" %}
+{% endblock footer %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const checkbox = document.getElementById("id_usar_mismo_numero");
+    const telefono = document.getElementById("id_aTelefono");
+    const whatsapp = document.getElementById("id_aWhatsapp");
+
+    function syncFields() {
+        if (checkbox.checked) {
+            whatsapp.value = telefono.value;
+            whatsapp.setAttribute("readonly", "readonly");
+        } else {
+            whatsapp.removeAttribute("readonly");
+        }
+    }
+
+    checkbox.addEventListener("change", syncFields);
+    telefono.addEventListener("input", function () {
+        if (checkbox.checked) {
+            whatsapp.value = telefono.value;
+        }
+    });
+
+    syncFields();
+});</script>
+{% endblock content %}

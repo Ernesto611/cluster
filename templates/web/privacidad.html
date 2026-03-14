@@ -1,0 +1,204 @@
+{% extends "web/layouts/base.html" %}
+{% load static %}
+{% block title %}Inicio{% endblock title %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+{% endblock extra_css %}
+{% block content %}
+
+    <section class="about padding-120">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Aviso de Privacidad</h2>
+            </div>
+            <div class="aviso-privacidad" style="text-align: justify;">
+                <p><strong>Cluster de Tecnologías de la información y Comunicaciones de Michoacán A.C.</strong>, con domicilio en Av. Las cañadas 501 Col. Tres Marías, Morelia Mich., es el responsable del uso y protección de sus datos personales, y al respecto le informamos lo siguiente:</p>
+
+                <h4>1. Utilización de sus datos. ¿Para qué fines utilizaremos sus datos personales?</h4>
+                <p>Los datos personales que recabamos de usted, los utilizaremos para las siguientes finalidades que son necesarias para el servicio que solicita:</p>
+                <ul>
+                    <li>A. Prestar los servicios de Servicios de CLUSTERTIM.</li>
+                    <li>B. Cumplir las obligaciones fiscales.</li>
+                </ul>
+                <p>1.2. De manera adicional, utilizaremos su información personal para las siguientes finalidades que no son necesarias para el servicio solicitado, pero que nos permiten y facilitan brindarle una mejor atención:</p>
+                <ul>
+                    <li>A. Promoción y difusión de servicios</li>
+                </ul>
+                <p>1.3. En caso de que no desee que sus datos personales sean tratados para estos fines adicionales, desde este momento usted nos puede comunicar lo anterior, llenando la última sección de este contrato o por medio de escrito libre o correo electrónico que deberá enviar en cualquier otro momento a: <a href="mailto:justic_consultoria@hotmail.com">justic_consultoria@hotmail.com</a> y/o <a href="mailto:florencio_ramirez@hotmail.com">florencio_ramirez@hotmail.com</a>, en donde exprese su negativa para el tratamiento de sus datos para estos fines.</p>
+                <p>1.4. La negativa para el uso de sus datos personales para estas finalidades no podrá ser un motivo para que le neguemos los servicios y productos que solicita o contrata con nosotros.</p>
+
+                <h4>2. Datos utilizados. ¿Qué datos personales utilizaremos para estos fines?</h4>
+                <p>Para llevar a cabo las finalidades descritas en el presente aviso de privacidad, utilizaremos los siguientes datos personales:</p>
+                <ul>
+                    <li>A. Datos de identificación</li>
+                    <li>B. Datos de contacto</li>
+                    <li>C. Datos laborales</li>
+                    <li>D. Datos académicos</li>
+                </ul>
+                <p>2.1. Además de los datos personales mencionados anteriormente, para las finalidades informadas en el presente aviso de privacidad utilizaremos los siguientes datos personales considerados como sensibles, que requieren de especial protección:</p>
+                <p>A. Ninguno.</p>
+
+                <h4>3. Difusión de datos. ¿Con quién compartimos su información personal y para qué fines?</h4>
+                <p>Le informamos que sus datos personales podrán ser compartidos dentro y fuera del país con las siguientes personas, empresas, organizaciones y autoridades distintas a nosotros, para los siguientes fines:</p>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Destinatario de los datos personales</th>
+                                <th>País (opcional)</th>
+                                <th>Finalidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Datos de Identificación</td>
+                                <td>México</td>
+                                <td>Promoción de Servicios asociados a CLUSTERTIM</td>
+                            </tr>
+                            <tr>
+                                <td>Datos académicos</td>
+                                <td>México</td>
+                                <td>Promoción de Servicios asociados a CLUSTERTIM</td>
+                            </tr>
+                            <tr>
+                                <td>Datos de contacto</td>
+                                <td>México</td>
+                                <td>Promoción de Servicios asociados a CLUSTERTIM</td>
+                            </tr>
+                            <tr>
+                                <td>Datos laborales</td>
+                                <td>México</td>
+                                <td>Promoción de Servicios asociados a CLUSTERTIM</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>3.1. Le informamos que para las transferencias indicadas requerimos obtener su consentimiento. Si usted no manifiesta su negativa para dichas transferencias, entenderemos que nos lo ha otorgado.</p>
+
+                <h4>4. Derechos ARCO. ¿Cómo puede acceder, rectificar o cancelar sus datos personales, u oponerse a su uso?</h4>
+                <p>
+                    Usted tiene derecho a conocer qué datos personales tenemos de usted, para qué los utilizamos y las condiciones del uso que les damos (Acceso).
+                    Asimismo, es su derecho solicitar la corrección de su información personal en caso de que esté desactualizada, sea inexacta o incompleta (Rectificación);
+                    que la eliminemos de nuestros registros o bases de datos cuando considere que la misma no está siendo utilizada conforme a los principios, deberes y
+                    obligaciones previstas en la normativa (Cancelación); así como oponerse al uso de sus datos personales para fines específicos (Oposición).
+                    Estos derechos se conocen como derechos ARCO.
+                </p>
+                <p>
+                    <strong>4.1.</strong> Para el ejercicio de cualquiera de los derechos ARCO, usted deberá presentar la solicitud mediante escrito libre en la siguiente
+                    Dirección: (Indicar domicilio), o por medio de correo electrónico a los siguientes buzones:
+                    <a href="mailto:contacto@clustertim.com.mx">contacto@clustertim.com.mx</a>
+                </p>
+                <p>
+                    <strong>4.2.</strong> Para conocer el procedimiento y requisitos para el ejercicio de los derechos ARCO, usted podrá llamar al siguiente número telefónico
+                    443 416 7326; o ingresar a nuestro sitio de Internet:
+                    <a href="https://clustertim.com.mx" target="_blank">clustertim.com.mx</a>, en la sección "Aviso de privacidad", o bien ponerse en contacto en forma personal
+                    en nuestro domicilio, en donde se le dará trámite a las solicitudes para el ejercicio de estos derechos, y se le atenderá cualquier duda que pudiera tener respecto al tratamiento de su información.
+                </p>
+
+                <h4>5. Revocación de consentimiento. ¿Cómo puede revocar su consentimiento para el uso de sus datos personales?</h4>
+                <p>
+                    Usted puede revocar el consentimiento que, en su caso, nos haya otorgado para el tratamiento de sus datos personales.
+                    Sin embargo, es importante que tenga en cuenta que no en todos los casos podremos atender su solicitud o concluir el uso de forma inmediata,
+                    ya que es posible que por alguna obligación legal requiramos seguir tratando sus datos personales.
+                    Asimismo, usted deberá considerar que para ciertos fines, la revocación de su consentimiento implicará que no le podamos seguir prestando el servicio que nos solicitó,
+                    o la conclusión de su relación con nosotros.
+                </p>
+                <p>
+                    <strong>5.1.</strong> Para revocar su consentimiento deberá presentar su solicitud en escrito libre en Av. Las cañadas 501 Col. Tres Marías
+                    o por medio de correo electrónico a los siguientes buzones:
+                    <a href="mailto:contacto@clustertim.com.mx">contacto@clustertim.com.mx</a>
+                </p>
+                <p>
+                    <strong>5.2.</strong> Para conocer el procedimiento y requisitos para la revocación del consentimiento, usted podrá llamar al siguiente número telefónico:
+                    443 416 7326 o ingresar a nuestro sitio de Internet:
+                    <a href="https://clustertim.com.mx" target="_blank">clustertim.com.mx</a>, en la sección "Aviso de privacidad", o bien ponerse en contacto en Av. Las cañadas 501 Col. Tres Marías.
+                </p>
+
+                <h4>6. Limitación de Derechos. ¿Cómo puede limitar el uso o divulgación de su información personal?</h4>
+                <p>
+                    Con objeto de que usted pueda limitar el uso y divulgación de su información personal, deberá presentar su solicitud en escrito libre en
+                    Av. Las cañadas 501 col. Tres Marías Morelia Michoacán o por medio de correo electrónico a los siguientes buzones: (indicar correo)
+                </p>
+                <ul>
+                    <li>
+                        A. Su inscripción en el Registro Público para Evitar Publicidad, que está a cargo de la Procuraduría Federal del Consumidor,
+                        con la finalidad de que sus datos personales no sean utilizados para recibir publicidad o promociones de empresas de bienes o servicios.
+                    </li>
+                    <li>
+                        B. Su registro en el listado de exclusión de "clientes que han limitado el de uso de sus datos",
+                        a fin de que sus datos personales no sean tratados para fines mercadotécnicos, publicitarios o de prospección comercial por nuestra parte.
+                        Para mayor información llamar al número telefónico (indicar número); enviar un correo electrónico a la siguiente dirección (indicar correo);
+                        o bien, consultar nuestras páginas de Internet: (indicar página), en la sección "Aviso de privacidad".
+                    </li>
+                </ul>
+
+                <h4>7. Uso de medios electrónicos. El uso de tecnologías de rastreo en nuestro portal de Internet.</h4>
+                <p>
+                    Le informamos que en nuestra página de Internet utilizamos cookies, web beacons y otras tecnologías a través de las cuales es posible monitorear su comportamiento como usuario de Internet,
+                    así como brindarle un mejor servicio y experiencia de usuario al navegar en nuestra página.
+                </p>
+                <p>
+                    <strong>7.1.</strong> Los datos personales que obtenemos de estas tecnologías de rastreo son los siguientes: correo electrónico, sólo en el caso de que haga uso de él;
+                    mismos que utilizamos para dar respuesta a sus solicitudes y consultas. Asimismo, le informamos que NO compartiremos estos datos con persona alguna,
+                    excepción hecha de los requerimientos por autoridad judicial.
+                </p>
+                <p><strong>7.2.</strong> Estas tecnologías podrán deshabilitarse siguiendo los siguientes pasos: No haciendo uso de correo electrónico.</p>
+                <p><strong>7.3.</strong> Para mayor información sobre el uso de estas tecnologías, puede consultar el sitio de Internet. NO APLICA.</p>
+
+                <h4>8. Actualización del aviso. ¿Cómo puede conocer los cambios a este aviso de privacidad?</h4>
+                <p>
+                    El presente aviso de privacidad puede sufrir modificaciones, cambios o actualizaciones derivadas de nuevos requerimientos legales;
+                    de nuestras propias necesidades por los productos o servicios que ofrecemos; de nuestras prácticas de privacidad;
+                    de cambios en nuestro modelo de negocio, o por otras causas.
+                </p>
+                <p>
+                    <strong>8.1.</strong> Nos comprometemos a mantenerlo informado sobre los cambios que pueda sufrir el presente aviso de privacidad,
+                    a través de nuestras páginas de internet:
+                    <a href="https://clustertim.com.mx" target="_blank">clustertim.com.mx</a>, en la sección "Aviso de privacidad".
+                </p>
+                <p>
+                    <strong>8.2.</strong> El procedimiento a través del cual se llevarán a cabo las notificaciones sobre cambios o actualizaciones al presente aviso de privacidad
+                    es el siguiente: Se presentará la fecha de la última actualización del aviso en el referido sitio de internet.
+                </p>
+
+                <h4>9. Datos de menores</h4>
+                <p>
+                    Le informamos que es de nuestro especial interés cuidar la información personal de los menores de edad y personas en estado de interdicción
+                    y capacidades diferentes en términos de ley, a través del establecimiento de medidas específicas, como son:
+                </p>
+                <ul>
+                    <li>La obtención del consentimiento de los padres y tutores por medio de la firma del aviso y su autorización, para el tratamiento de los datos personales de este grupo de personas, al momento de contratar nuestros servicios.</li>
+                    <li>La verificación de la autenticidad del consentimiento otorgado por los padres o tutores, solicitando copias del acta o documento que acredite el carácter de tutor al momento de contratar nuestros servicios.</li>
+                    <li>La implementación y mantenimiento de medidas de seguridad más estrictas a efecto de asegurar la confidencialidad de los menores y este grupo de personas.</li>
+                </ul>
+
+                <h4>10. Inconformidades o Denuncias y Autoridad Competente</h4>
+                <p>
+                    Si usted considera que su derecho a la protección de sus datos personales ha sido lesionado por alguna conducta u omisión de nuestra parte,
+                    o presume alguna violación a las disposiciones previstas en la Ley Federal de Protección de Datos Personales en Posesión de los Particulares,
+                    su Reglamento y demás ordenamientos aplicables, podrá interponer su inconformidad o denuncia ante el Instituto Nacional
+                    de Acceso a la Información y Protección de Datos (INAI). Para mayor información, le sugerimos visitar su página oficial de Internet:
+                    <a href="https://home.inai.org.mx" target="_blank">https://home.inai.org.mx</a>
+                </p>
+
+                <h4>11. Autorización y consentimiento</h4>
+                <p>
+                    Con el acceso y uso de esta (página, sistema o herramienta) otorga su consentimiento para sus datos personales sean tratados conforme a lo señalado en el presente aviso de privacidad.
+                    Y otorgo su consentimiento para que sus datos sean compartidos dentro y fuera del país con las personas, empresas, organizaciones y autoridades indicadas en este aviso de privacidad.
+                </p>
+
+            </div>
+        </div>
+    </section>
+
+    {% block footer %}
+        {% include "web/layouts/footer.html" %}
+    {% endblock footer %}
+
+{% endblock content %}
+{% block extra_js %}
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+{% endblock extra_js %}
+
+{% block scripts %}
+{% endblock scripts %}

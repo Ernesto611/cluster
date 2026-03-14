@@ -1,0 +1,21 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Visita Registrada{% endblock %}
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Stands" title="Visita Registrada" %}
+            {% endblock pagetitle %}
+
+            <div class="alert alert-success text-center">
+                <h2>¡Registro exitoso!</h2>
+                <p><b>Stand:</b> {{ stand.aNombre }}</p>
+                <p><b>Visitante:</b> {{ usuario.aNombre }} {{ usuario.aApellido }}</p>
+                <a href="{% url 'escaneo_stand' %}" class="btn btn-primary">Escanear otro</a>
+            </div>
+        </div>
+    </div> 
+</div>
+{% endblock %}

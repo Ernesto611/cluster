@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pago Pendiente de Aportación</title>
+    <link href="https://fonts.googleapis.com/css2?family=Imprima&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Imprima', Arial, sans-serif; background: #f4f4f4; }
+        .container { max-width: 600px; background: #fff; margin: 30px auto; padding: 20px; border-radius: 8px; }
+        .header { text-align: center; }
+        .header img { width: 100px; }
+        .content { text-align: center; padding: 20px; }
+        .details { background: #f9f9f9; padding: 15px; border-radius: 5px; margin-top: 20px; text-align: left; }
+        .details p { margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://registroclustertim.com/static/web/images/logo_cluster2.png" alt="Logo">
+        </div>
+        <div class="content">
+            <h2>¡Gracias por tu aportación, {{ aportacion.idAportador.aNombre }}!</h2>
+            <p>Para completar tu aportación, realiza el pago con los siguientes datos:</p>
+            <div class="details">
+                <p><strong>Banco:</strong> {{ datos_pago.aNombreBanco }}</p>
+                <p><strong>Beneficiario:</strong> {{ datos_pago.aNombreBeneficiario }}</p>
+                <p><strong>Número de cuenta:</strong> {{ datos_pago.aNumeroCuenta }}</p>
+                <p><strong>CLABE:</strong> {{ datos_pago.aClabe }}</p>
+                <p><strong>Referencia:</strong> {{ aportacion.referencia_pago }}</p>
+                <p><strong>Monto a pagar:</strong> ${{ aportacion.monto_pago|floatformat:2 }} MXN</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

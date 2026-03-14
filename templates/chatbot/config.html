@@ -1,0 +1,98 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}Configuración del Chatbot{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Configuración" title="Configuración del Chatbot" %}
+
+            <div class="alert alert-danger" role="alert" {% if not form.errors %}style="display: none;"{% endif %}>
+                <strong>Errores:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field }}: {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <form method="POST" autocomplete="off">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Configuración General</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre de la Configuración</label>
+                                    {{ form.nombre }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Sección Fija</label>
+                                    {{ form.seccion_fija }}
+                                    <div class="form-text text-danger">
+                                        ⚠ ADVERTENCIA: No elimines reglas esenciales como "No responder fuera de temas del sistema" o "No inventar información".
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Información Editable</label>
+                                    {{ form.seccion_editable }}
+                                    <div class="form-text">Puedes modificar esta sección según se requiera.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end mb-3">
+                            <button type="submit" class="btn btn-primary">Guardar Configuración</button>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Vista Previa del Prompt</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="prompt-preview">
+                                    <pre style="white-space: pre-wrap; font-size: 12px; background-color: #f8f9fa; padding: 10px; border-radius: 4px; max-height: 400px; overflow-y: auto;">{{ prompt_completo }}</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Información</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Última actualización:</strong><br>
+                                {{ config.ultima_actualizacion|date:"d/m/Y H:i" }}</p>
+                                <p><strong>ID de configuración:</strong> {{ config.id }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% for message in messages %}
+    <script>
+        Swal.fire({
+            icon: "{{ message.tags }}",
+            title: "{{ message }}",
+            timer: 1500,
+            showConfirmButton: false
+        });
+</script>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}Editar Entrada{% endblock %}
+{% block extra_css %}
+    <link href="{% static 'libs/dropzone/dist/dropzone.css'%}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'node_modules/select2/dist/css/select2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Entradas" title="Editar Entrada" %}
+            {% endblock pagetitle %}
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Información</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre de la Entrada</label>
+                                    {{ form.aNombre }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Evento</label>
+                                    {{ form.idEvento }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Costo</label>
+                                    {{ form.nCosto }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Cantidad</label>
+                                    {{ form.nCantidad }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="entrada-multiple-checkbox">¿Se puede comprar más de una entrada?</label>
+                                    {{ form.lMultiple }}
+                                    <div class="form-text">Marque esta opción para que un usuario pueda, por ejemplo, comprar 5 entradas para otros usuarios.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Actividades</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check form-switch mb-3">
+                                    <label class="form-check-label" for="incluir-actividades-checkbox">¿Incluir actividades?</label>
+                                    <input type="checkbox" id="incluir-actividades-checkbox" class="form-check-input"
+                                           {% if actividades_seleccionadas %}checked{% endif %}>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="entrada-actividades-input">Actividades Incluidas</label>
+                                    <select id="entrada-actividades-input" name="actividades" multiple class="form-control">
+                                        
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-end mb-3">
+                        <button type="submit" class="btn btn-primary">Actualizar Entrada</button>
+                        <a href="{% url 'listado_entradas' %}" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'node_modules/select2/dist/js/select2.min.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const incluirActividadesCheckbox = document.getElementById('incluir-actividades-checkbox');
+        const actividadesInput = document.getElementById('entrada-actividades-input');
+        const eventoInput = document.getElementById('entrada-evento-input');
+        const actividadesSeleccionadas = {{ actividades_seleccionadas|safe }};
+
+        function cargarActividades(eventoId, actividadesPreseleccionadas = []) {
+            if (eventoId) {
+                fetch(`/entradas/${eventoId}/actividades/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        actividadesInput.innerHTML = '';
+                        data.forEach(actividad => {
+                            const option = document.createElement('option');
+                            option.value = actividad.idActividad;
+                            option.text = actividad.aNombre;
+                            if (actividadesPreseleccionadas.includes(actividad.idActividad)) {
+                                option.selected = true;
+                            }
+                            actividadesInput.add(option);
+                        });
+
+                        jQuery('#entrada-actividades-input').select2({
+                            placeholder: 'Selecciona las actividades',
+                            allowClear: true
+                        });
+                    });
+            }
+        }
+
+        function toggleActividades() {
+            actividadesInput.disabled = !incluirActividadesCheckbox.checked;
+            if (!incluirActividadesCheckbox.checked) {
+                jQuery('#entrada-actividades-input').val(null).trigger('change');
+            }
+        }
+
+        jQuery('#entrada-actividades-input').select2({
+            placeholder: 'Selecciona las actividades',
+            allowClear: true
+        });
+
+        cargarActividades(eventoInput.value, actividadesSeleccionadas);
+
+        eventoInput.addEventListener('change', function () {
+            cargarActividades(this.value);
+        });
+
+        incluirActividadesCheckbox.addEventListener('change', toggleActividades);
+
+        toggleActividades();
+    });</script>
+{% endblock %}

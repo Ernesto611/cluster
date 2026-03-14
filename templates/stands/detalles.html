@@ -1,0 +1,54 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Detalles del Stand{% endblock title %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Stands" title="Detalles del Stand" %}
+            {% endblock pagetitle %}
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Información del Stand</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Nombre:</strong> {{ stand.aNombre }}</p>
+                            <p><strong>Número de Stand:</strong> {{ stand.nNumeroStand }}</p>
+                            <p><strong>Evento Asociado:</strong> {{ stand.idEvento.aNombre }}</p>
+                            <p><strong>Estado:</strong> 
+                                {% if stand.lActivo %}
+                                    <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Imagen</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if stand.aImagen %}
+                                <img src="{{ stand.aImagen.url }}" alt="Imagen del Stand" class="img-fluid">
+                            {% else %}
+                                <p>No se ha subido una imagen.</p>
+                            {% endif %}
+                        </div>
+                    </div>                    
+                </div>
+                <div class="col-lg-4">
+                    <div class="text-end mb-3">
+                        <a href="{% url 'listado_stands' %}" class="btn btn-secondary">Volver al Listado</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "web/layouts/base.html" %}
+{% block title %}Aportación Exitosa{% endblock %}
+{% block content %}
+<div class="auth-page-wrapper pt-5">
+    <div class="auth-page-content">
+        <div class="container text-center">
+            <h3 class="text-success">¡Aportación Exitosa!</h3>
+            <p class="text-muted">Gracias por apoyar el evento. Hemos enviado un correo con la confirmación de tu aportación.</p>
+            <a href="{% url 'evento_detalles' ultimo_evento_id %}" class="btn btn-primary mt-3">Volver al Evento</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

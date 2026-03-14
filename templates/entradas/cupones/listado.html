@@ -1,0 +1,235 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Cupones{% endblock title %}
+
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+  <div class="page-content">
+    <div class="container-fluid">
+      {% block pagetitle %}
+      {% include "partials/page-title.html" with pagetitle="Cupones" title="Listado de cupones" %}
+      {% endblock pagetitle %}
+
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card" id="cuponList">
+            <div class="card-header border-0">
+              <div class="row align-items-center gy-3">
+                <div class="col-sm">
+                  <h5 class="card-title mb-0">Listado de Cupones</h5>
+                </div>
+                <div class="col-sm-auto">
+                  {% if user.tipo_usuario == 'super_administrador' or 'agregar' in permisos %}
+                  <a href="{% url 'agregar_cupon' entrada.idEntrada %}" class="btn btn-success">
+                    <i class="ri-price-tag-3-fill align-bottom me-1"></i> Nuevo Cupón
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body border border-dashed border-end-0 border-start-0">
+              <form method="get" class="row g-3 mb-3">
+                <div class="d-flex flex-wrap align-items-end gap-3">
+                  <div class="flex-grow-1">
+                    <div class="search-box">
+                      <input type="text" name="q" class="form-control" placeholder="Buscar por código o valor..." value="{{ q|default_if_none:'' }}">
+                      <i class="ri-search-line search-icon"></i>
+                    </div>
+                  </div>
+                  <div class="flex-shrink-0">
+                    <button type="submit" class="btn btn-primary w-100"><i class="ri-filter-line"></i></button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div class="card-body pt-0">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div id="table-counter" class="text-muted small" aria-live="polite">
+                      Mostrando 0–0 de 0 registros
+                  </div>
+              </div>
+              <br>
+              <div class="table-responsive table-card mb-1">
+                <table class="table table-nowrap align-middle" id="orderTable">
+                  <thead class="text-muted table-light">
+                    <tr class="text-uppercase fs-13">
+                      <th class="sort" data-sort="codigo">Código</th>
+                      <th class="sort" data-sort="tipo">Tipo</th>
+                      <th class="sort" data-sort="valor">Valor</th>
+                      <th class="sort" data-sort="limite">Límite</th>
+                      <th class="sort" data-sort="usados">Usados</th>
+                      <th class="sort" data-sort="estado">Estado</th>
+                      <th>Opciones</th>
+                    </tr>
+                  </thead>
+                  <tbody class="list form-check-all">
+                    {% for cupon in cupones %}
+                    <tr>
+                      <td class="codigo">{{ cupon.aCodigo }}</td>
+                      <td class="tipo">{{ cupon.get_eTipo_display }}</td>
+                      <td class="valor">
+                        {% if cupon.eTipo == 'porcentaje' %}
+                          {{ cupon.nValor|floatformat:0 }}%
+                        {% else %}
+                          ${{ cupon.nValor|floatformat:2 }}
+                        {% endif %}
+                      </td>
+                      <td class="limite">{{ cupon.nLimiteUso|default:"Ilimitado" }}</td>
+                      <td class="usados">{{ cupon.nUsados }}</td>
+                      <td class="estado">
+                        {% if cupon.lActivo %}
+                          <span class="badge bg-success text-uppercase">Activo</span>
+                        {% else %}
+                          <span class="badge bg-danger text-uppercase">Inactivo</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <ul class="list-inline hstack gap-2 mb-0">
+                          
+                           {% if user.tipo_usuario == 'super_administrador' or 'editar' in permisos %}
+                          <li class="list-inline-item" data-bs-toggle="tooltip" title="Editar">
+                            <a href="{% url 'editar_cupon' cupon.id %}" class="text-primary d-inline-block">
+                              <i class="ri-edit-box-line fs-16"></i>
+                            </a>
+                          </li>
+                          {% endif %}
+                          {% if user.tipo_usuario == 'super_administrador' or 'desactivar' in permisos %}
+                          
+                            <li class="list-inline-item" data-bs-toggle="tooltip" title="{% if cupon.lActivo %}Desactivar{% else %}Activar{% endif %}">
+                                <form action="{% url 'alternar_estado_cupon' cupon.id %}" method="POST" class="toggle-active-form" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-link p-0" style="text-decoration: none; color: {% if cupon.lActivo %}#ffc107{% else %}#28a745{% endif %};">
+                                        <i class="{% if cupon.lActivo %}ri-close-circle-line{% else %}ri-check-line{% endif %} fs-16"></i>
+                                    </button>
+                                </form>
+                            </li> 
+                            {% endif %}  
+                        </ul>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="7" class="text-center">No hay cupones registrados.</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                <div class="noresult" style="display: none">
+                  <div class="text-center">
+                    <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:75px;height:75px"></lord-icon>
+                    <h5 class="mt-2">¡No encontramos ningún resultado!</h5>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end">
+                <div class="pagination-wrap hstack gap-2">
+                  <a class="page-item pagination-prev disabled" href="#">Anterior</a>
+                  <ul class="pagination listjs-pagination mb-0"></ul>
+                  <a class="page-item pagination-next" href="#">Siguiente</a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'libs/list.js/dist/list.min.js'%}"></script>
+<script src="{% static 'libs/list.pagination.js/dist/list.pagination.min.js'%}"></script>
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+
+{% for message in messages %}
+  {% if message.tags == 'success' %}
+  <script>
+    Swal.fire({ icon: 'success', iconColor: '#0ab39c', title: "{{ message }}", showConfirmButton: false, timer: 1500 });
+</script>
+  {% elif message.tags == 'error' %}
+  <script>
+    Swal.fire({ icon: 'error', title: "{{ message }}", showConfirmButton: false, timer: 1500 });
+</script>
+  {% endif %}
+{% endfor %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const toggleButtons = document.querySelectorAll('.toggle-btn');
+    toggleButtons.forEach(button => {
+      button.addEventListener('click', function (e) {
+        e.preventDefault();
+        const form = this.closest('.toggle-form');
+        Swal.fire({
+          title: '¿Cambiar estado?',
+          text: 'Se alternará entre activo e inactivo.',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Sí, continuar',
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            form.submit();
+          }
+        });
+      });
+    });
+
+    const options = {
+      valueNames: ['codigo', 'tipo', 'valor', 'limite', 'usados', 'estado'],
+      page: 10,
+      pagination: true
+    };
+
+    const cuponList = new List('cuponList', options);
+
+    function renderCounter(list) {
+        const el = document.getElementById('table-counter');
+        if (!el) return;
+
+        const total = list.matchingItems ? list.matchingItems.length : list.size();
+
+        let start = 0, end = 0;
+        if (total > 0) {
+
+            start = list.i;
+            end = list.i + list.visibleItems.length - 1;
+        }
+
+        const sufijo = (total === 1) ? 'registro' : 'registros';
+        el.textContent = `Mostrando ${start}–${end} de ${total} ${sufijo}`;
+    }
+
+    function togglePaginationControls() {
+        const paginationContainer = document.querySelector('.pagination-wrap');
+        const totalItems = cuponList.matchingItems ? cuponList.matchingItems.length : cuponList.size();
+        const itemsPerPage = cuponList.page;
+
+        if (totalItems <= itemsPerPage) {
+            paginationContainer.style.display = 'none';
+        } else {
+            paginationContainer.style.display = 'flex';
+        }
+    }
+
+    renderCounter(cuponList);
+    togglePaginationControls();
+
+    cuponList.on('updated', function (list) {
+        renderCounter(list);
+        togglePaginationControls();
+    });
+  });</script>
+{% endblock extra_js %}

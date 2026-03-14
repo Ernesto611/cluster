@@ -1,0 +1,200 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Archivos del Evento{% endblock %}
+
+{% block extra_css %}
+    <link href="{% static 'libs/dropzone/dist/dropzone.css'%}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Eventos" title="Gestión de Archivos" %}
+
+            <div class="mb-3 text-end">
+                <a href="{% url 'listado_eventos' %}" class="btn btn-secondary">
+                    <i class="ri-arrow-go-back-line align-bottom me-1"></i> Volver al listado
+                </a>
+            </div>
+            {% if user.tipo_usuario == 'super_administrador' or 'agregar' in permisos %}
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Subir nuevo archivo al evento: {{ evento.aNombre }}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="row g-3 align-items-end">
+                        {% csrf_token %}
+                        <div class="col-md-5">
+                            <label class="form-label">Título del archivo</label>
+                            {{ form.titulo }}
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Archivo</label>
+                            {{ form.archivo }}
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button type="submit" class="btn btn-primary w-100">Subir</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Archivos subidos</h5>
+                </div>
+                <div class="card-body">
+                    {% if archivos %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Título</th>
+                                    <th>Archivo</th>
+                                    <th>Fecha</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for archivo in archivos %}
+                                <tr>
+                                    <td>{{ archivo.titulo }}</td>
+                                    <td><a href="{{ archivo.archivo.url }}" download>Descargar</a></td>
+                                    <td>{{ archivo.fecha_subida|date:"d/m/Y H:i" }}</td>
+                                    <td class="text-center">
+                                        {% if user.tipo_usuario == 'super_administrador' or 'editar' in permisos %}
+                                        <button 
+                                            type="button"
+                                            class="btn btn-sm btn-warning editar-archivo-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editarArchivoModal"
+                                            data-id="{{ archivo.id }}"
+                                            data-titulo="{{ archivo.titulo }}"
+                                        >Editar</button>
+                                        {% endif %}
+                                        {% if user.tipo_usuario == 'super_administrador' or 'desactivar' in permisos %}
+                                        <form action="{% url 'alternar_estado_archivo' archivo.id %}" method="POST" class="d-inline toggle-active-form">
+                                            {% csrf_token %}
+                                            <button type="submit" 
+                                                    class="btn btn-sm"
+                                                    style="color: {% if archivo.lActivo %}#ffc107{% else %}#28a745{% endif %};"
+                                                    title="{% if archivo.lActivo %}Desactivar{% else %}Activar{% endif %}">
+                                                <i class="{% if archivo.lActivo %}ri-close-circle-line{% else %}ri-check-line{% endif %} fs-16"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        {% if user.tipo_usuario == 'super_administrador' or 'borrar' in permisos %}
+                                        <form action="{% url 'eliminar_archivo_evento' archivo.id %}" method="POST" class="d-inline delete-form">
+                                            {% csrf_token %}
+                                            <button type="button" class="btn btn-sm btn-danger delete-archivo-btn">Eliminar</button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">Este evento aún no tiene archivos subidos.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editarArchivoModal" tabindex="-1" aria-labelledby="editarArchivoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" id="formEditarArchivo" data-url-template="/eventos/archivos/REPLACE_ID/editar/">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Título del Archivo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id_archivo" id="editarArchivoId">
+                    <div class="mb-3">
+                        <label class="form-label">Nuevo título</label>
+                        <input type="text" class="form-control" name="titulo" id="editarArchivoTitulo" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const form = document.getElementById('formEditarArchivo');
+    const idInput = document.getElementById('editarArchivoId');
+    const tituloInput = document.getElementById('editarArchivoTitulo');
+    const urlTemplate = form.getAttribute('data-url-template');
+
+    document.querySelectorAll('.editar-archivo-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const id = this.getAttribute('data-id');
+            const titulo = this.getAttribute('data-titulo');
+
+            idInput.value = id;
+            tituloInput.value = titulo;
+
+            const finalUrl = urlTemplate.replace('REPLACE_ID', id);
+            form.setAttribute('action', finalUrl);
+        });
+    });
+
+    document.querySelectorAll('.delete-archivo-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const form = this.closest('.delete-form');
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: 'Esta acción eliminará el archivo.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminarlo',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: "{{ message|escapejs }}",
+            showConfirmButton: false,
+            timer: 1500
+        });
+        {% elif message.tags == 'error' %}
+        Swal.fire({
+            icon: 'error',
+            title: "{{ message|escapejs }}",
+            showConfirmButton: false,
+            timer: 1500
+        });
+        {% endif %}
+    {% endfor %}
+});</script>
+{% endblock extra_js %}

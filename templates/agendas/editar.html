@@ -1,0 +1,258 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Editar Agenda{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Agendas" title="Editar Agenda" %}
+            {% endblock pagetitle %}
+            
+            {% if form.errors or actividades_form.errors %}
+            <div class="alert alert-danger">
+                <strong>Se encontraron errores:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+                    {% endfor %}
+                    {% for field, errors in actividades_form.errors.items %}
+                        <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            <form method="POST" id="edit-agenda-form">
+                {% csrf_token %}
+                <input type="hidden" name="actividades" id="selected-activities">  
+            
+                <div class="row">
+                    <div class="col-xl-3">
+                        <div class="card card-h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Información de la Agenda</h5>
+                                <div class="mb-3">
+                                    <label class="form-label">Evento</label>
+                                    {{ form.idEvento }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre de la Agenda</label>
+                                    {{ form.aNombre }}
+                                </div>
+                                <div class="form-check form-switch">
+                                    <label class="form-check-label">¿Visible para todos?</label>
+                                    {{ form.lVisible }}
+                                </div>
+                                <div class="form-check form-switch">
+                                    <label class="form-check-label">¿Agenda Activa?</label>
+                                    {{ form.lActivo }}
+                                </div>
+                            </div>
+                        </div>
+            
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Actividades Disponibles</h5>
+                                <div id="activity-list">
+                                    {% for actividad in actividades %}
+                                        <button type="button" class="btn btn-info mb-2 w-100 activity-btn" 
+                                                data-id="{{ actividad.idActividad }}" 
+                                                data-nombre="{{ actividad.aNombre }}" 
+                                                data-inicio="{{ actividad.fFechaHoraInicio.isoformat }}" 
+                                                data-fin="{{ actividad.fFechaHoraFin.isoformat }}">
+                                            {{ actividad.aNombre }}
+                                        </button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+            
+                    <div class="col-xl-9">
+                        <div class="card card-h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Calendario de la Agenda</h5>
+                                <div id="calendar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="activity-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="activity-modal-title">Detalles de la Actividad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Inicio:</strong> <span id="activity-start"></span></p>
+                <p><strong>Fin:</strong> <span id="activity-end"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="delete-activity-btn">Eliminar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'libs/fullcalendar/index.global.min.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    const form = document.getElementById('edit-agenda-form');
+    const actividadList = document.getElementById('activity-list');
+    const selectedInput = document.getElementById('selected-activities');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    let calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        firstDay: 1,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: [
+            {% for aa in agenda.agenda_actividades.all %}
+            {
+                id: "{{ aa.idActividad.idActividad }}",
+                title: "{{ aa.idActividad.aNombre|escapejs }}",
+                start: "{{ aa.idActividad.fFechaHoraInicio.isoformat }}",
+                end: "{{ aa.idActividad.fFechaHoraFin.isoformat }}",
+                backgroundColor: "#0ab39c"
+            },
+            {% endfor %}
+        ],
+        eventClick: function(info) {
+            const event = info.event;
+            document.getElementById('activity-modal-title').textContent = event.title;
+            document.getElementById('activity-start').textContent = event.start.toLocaleString();
+            document.getElementById('activity-end').textContent = event.end ? event.end.toLocaleString() : 'No definido';
+            document.getElementById('delete-activity-btn').setAttribute('data-id', event.id);
+
+            new bootstrap.Modal(document.getElementById('activity-modal')).show();
+        }
+    });
+
+    calendar.render();
+
+    calendar.getEvents().forEach(event => {
+        const btn = document.querySelector(`.activity-btn[data-id="${event.id}"]`);
+        if (btn) {
+            btn.classList.remove('btn-info');
+            btn.classList.add('btn-success');
+            btn.disabled = true;
+        }
+    });
+
+    actividadList.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('activity-btn') && !e.target.disabled) {
+            const btn = e.target;
+            const id = btn.dataset.id;
+            const nombre = btn.dataset.nombre;
+            const inicio = btn.dataset.inicio;
+            const fin = btn.dataset.fin;
+
+            if (!calendar.getEventById(id)) {
+                calendar.addEvent({
+                    id,
+                    title: nombre,
+                    start: inicio,
+                    end: fin,
+                    backgroundColor: '#0ab39c'
+                });
+                btn.classList.remove('btn-info');
+                btn.classList.add('btn-success');
+                btn.disabled = true;
+                calendar.gotoDate(inicio);
+                actualizarActividades();
+            }
+        }
+    });
+
+    document.getElementById('delete-activity-btn').addEventListener('click', function() {
+        const id = this.dataset.id;
+        const event = calendar.getEventById(id);
+        if (event) event.remove();
+
+        const btn = document.querySelector(`.activity-btn[data-id="${id}"]`);
+        if (btn) {
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-info');
+            btn.disabled = false;
+        }
+
+        actualizarActividades();
+        bootstrap.Modal.getInstance(document.getElementById('activity-modal')).hide();
+    });
+
+    function actualizarActividades() {
+        const actividadesSeleccionadas = calendar.getEvents().map(e => e.id);
+        selectedInput.value = JSON.stringify(actividadesSeleccionadas);
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        actualizarActividades();
+
+        const formData = new FormData(form);
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                alert(data.error || 'Error al guardar');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Ocurrió un error al guardar");
+        });
+    });
+
+    const selectEvento = document.getElementById('id_idEvento');
+    if (selectEvento) {
+        selectEvento.addEventListener('change', function () {
+            fetch(`/agendas/obtener-actividades/?evento_id=${this.value}`)
+                .then(res => res.json())
+                .then(data => {
+                    actividadList.innerHTML = '';
+                    data.forEach(act => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'btn btn-info mb-2 w-100 activity-btn';
+                        btn.dataset.id = act.idActividad;
+                        btn.dataset.nombre = act.aNombre;
+                        btn.dataset.inicio = act.fFechaHoraInicio;
+                        btn.dataset.fin = act.fFechaHoraFin;
+                        btn.innerText = act.aNombre;
+                        actividadList.appendChild(btn);
+                    });
+                });
+        });
+    }
+});</script>
+{% endblock %}

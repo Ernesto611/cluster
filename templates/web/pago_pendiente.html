@@ -1,0 +1,33 @@
+{% extends "web/layouts/base.html" %}
+{% block title %}{{ titulo }} Registrada{% endblock %}
+{% block content %}
+<div class="auth-page-wrapper pt-5">
+    <div class="auth-page-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6 col-xl-5">
+                    <div class="card mt-4">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="text-warning">¡{{ titulo }} Registrada!</h5>
+                            <p class="text-muted">Tu {{ tipo }} ha sido registrada correctamente.</p>
+                            <p class="text-muted">El pago está pendiente. Te enviamos un correo con los datos para realizar el depósito o transferencia.</p>
+                            <p class="text-muted">
+                                Cuando hayas realizado el pago, puedes subir tu comprobante desde la sección
+                                <a href="{% url 'mis_compras' %}" class="fw-semibold text-primary text-decoration-underline">Mis Compras</a>.
+                            </p>
+                            <div class="mt-4">
+                                {% if ultimo_evento_id %}
+                                    <a href="{% url 'evento_detalles' ultimo_evento_id %}" class="btn btn-secondary w-100">Regresar al Evento</a>
+                                {% else %}
+                                    <a href="{% url 'index' %}" class="btn btn-secondary w-100">Regresar al Inicio</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

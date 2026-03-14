@@ -1,0 +1,180 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Editar Banner{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+<style>
+    .preview-container { border: 1px solid #ccc; padding: 10px; background: #f9f9f9; }
+    #cropperModal .modal-dialog { max-width: 95vw; }
+    #cropperModal .modal-content { height: 90vh; }
+    #cropperModal .modal-body { padding: 0; text-align: center; }
+    #imagen-recorte { max-width: 100%; max-height: 80vh; display: inline-block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+
+            {% include "partials/page-title.html" with pagetitle="Sitio" title="Editar Banner" %}
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Título:</label>
+                        {{ form.titulo }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">URL (Opcional):</label>
+                        {{ form.url }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Seleccionar nueva imagen (opcional)</label>
+                    <input type="file" id="input-imagen-banner" accept="image/*" class="form-control">
+                    <input type="hidden" name="imagen_base64" id="imagen_base64">
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p class="fw-bold">Vista previa</p>
+                        <div class="preview-container" style="aspect-ratio: 1400 / 530;">
+                            <img id="preview-escritorio" class="img-fluid" src="{{ banner.imagen.url }}">
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    <a href="{% url 'banner_principal' %}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cropperModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Recortar nueva imagen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="imagen-recorte" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="confirmar-recorte" data-bs-dismiss="modal">Recortar y continuar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let cropper;
+    const inputImagen = document.getElementById("input-imagen-banner");
+    const imagenRecorte = document.getElementById("imagen-recorte");
+    const previewEscritorio = document.getElementById("preview-escritorio");
+    const previewMovil = document.getElementById("preview-movil");
+    const inputBase64 = document.getElementById("imagen_base64");
+    const btnConfirmar = document.getElementById("confirmar-recorte");
+    const modal = new bootstrap.Modal(document.getElementById('cropperModal'));
+
+    inputImagen.addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            imagenRecorte.src = event.target.result;
+
+            imagenRecorte.onload = function () {
+                if (imagenRecorte.naturalWidth < 1400 || imagenRecorte.naturalHeight < 530) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Imagen muy pequeña',
+                        text: 'Debe tener al menos 1400x530 píxeles.',
+                        confirmButtonText: 'Entendido'
+                    });
+                    imagenRecorte.src = "";
+                    inputImagen.value = "";
+                    return;
+                }
+
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(imagenRecorte, {
+                    aspectRatio: 1400 / 530,
+                    viewMode: 1,
+                    autoCropArea: 1,
+                    responsive: true,
+                    movable: false
+                });
+                modal.show();
+
+                document.getElementById('cropperModal').addEventListener('shown.bs.modal', function () {
+                    if (cropper) cropper.destroy();
+
+                    cropper = new Cropper(imagenRecorte, {
+                        aspectRatio: 1400 / 530,
+                        viewMode: 1,
+                        autoCropArea: 1,
+                        responsive: true,
+                        background: false,
+                        movable: false
+                    });
+                });
+            };
+        };
+        reader.readAsDataURL(file);
+    });
+
+    btnConfirmar.addEventListener("click", function () {
+        if (!cropper) return;
+        const canvasEscritorio = cropper.getCroppedCanvas({ width: 1400, height: 530 });
+        const dataUrl = canvasEscritorio.toDataURL("image/jpeg");
+        previewEscritorio.src = dataUrl;
+        inputBase64.value = dataUrl;
+
+        const croppedMobile = document.createElement("canvas");
+        croppedMobile.width = 292;
+        croppedMobile.height = 530;
+        const offsetX = (canvasEscritorio.width - 292) / 2;
+        croppedMobile.getContext("2d").drawImage(canvasEscritorio, offsetX, 0, 292, 530, 0, 0, 292, 530);
+        previewMovil.src = croppedMobile.toDataURL("image/jpeg");
+    });
+
+    const vistaActualEscritorio = previewEscritorio?.src;
+    if (vistaActualEscritorio) {
+        const img = new Image();
+        img.src = vistaActualEscritorio;
+        img.onload = function () {
+            if (img.width >= 292 && img.height >= 530) {
+                const croppedMobile = document.createElement("canvas");
+                croppedMobile.width = 292;
+                croppedMobile.height = 530;
+
+                const offsetX = (img.width - 292) / 2;
+                const ctx = croppedMobile.getContext("2d");
+                ctx.drawImage(img, offsetX, 0, 292, 530, 0, 0, 292, 530);
+                previewMovil.src = croppedMobile.toDataURL("image/jpeg");
+            }
+        };
+    }
+
+});
+</script>
+{% endblock %}

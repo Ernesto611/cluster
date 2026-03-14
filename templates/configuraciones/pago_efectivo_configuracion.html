@@ -1,0 +1,75 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}Configuración Pago en Efectivo{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Pagos" title="Configuración Pago en Efectivo" %}
+
+            <div class="alert alert-danger" role="alert" {% if not form.errors %}style="display: none;"{% endif %}>
+                <strong>Errores:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field }}: {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <form method="POST" autocomplete="off">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Datos Bancarios</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Banco</label>
+                                    {{ form.aNombreBanco }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre del Beneficiario</label>
+                                    {{ form.aNombreBeneficiario }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Número de Cuenta</label>
+                                    {{ form.aNumeroCuenta }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">CLABE Interbancaria</label>
+                                    {{ form.aClabe }}
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <label class="form-check-label">¿Método activo?</label>
+                                    {{ form.lActivo }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end mb-3">
+                            <button type="submit" class="btn btn-primary">Guardar Configuración</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% for message in messages %}
+    <script>
+        Swal.fire({
+            icon: "{{ message.tags }}",
+            title: "{{ message }}",
+            timer: 1500,
+            showConfirmButton: false
+        });
+</script>
+{% endfor %}
+{% endblock %}

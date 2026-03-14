@@ -1,0 +1,25 @@
+{% extends "web/layouts/base.html" %}
+{% block title %}Verificación Pendiente{% endblock %}
+{% block content %}
+<div class="auth-page-wrapper pt-5">
+    <div class="auth-page-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6 col-xl-5">
+                    <div class="card mt-4">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="text-primary">Verificación Pendiente</h5>
+                            <p class="text-muted">Hemos enviado un correo con un enlace de verificación. Por favor, revisa tu bandeja de entrada.</p>
+                            <form method="POST" action="{% url 'reenviar_verificacion' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary w-100">Reenviar Correo de Verificación</button>
+                            </form>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

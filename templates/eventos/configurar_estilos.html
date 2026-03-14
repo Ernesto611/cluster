@@ -1,0 +1,247 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Configurar Estilos ({{ categoria.aNombre }}){% endblock %}
+
+{% block extra_css %}
+<link href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css" rel="stylesheet" />
+<style>
+  .style-option{position:relative;cursor:pointer;border:1px solid var(--vz-border-color,#e9ebec);border-radius:.5rem;overflow:hidden;transition:box-shadow .2s,transform .08s;background:#fff}
+  .style-option:hover{box-shadow:0 8px 24px rgba(0,0,0,.08)}
+  .style-option input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .style-thumb{width:100%;height:160px;object-fit:cover;display:block}
+  .style-caption{padding:10px 12px;font-weight:600;font-size:.95rem}
+  .style-option.active{outline:2px solid #405189;transform:translateY(-1px)}
+  .logo-preview{border:1px dashed #ccc;background:#111;display:inline-block;padding:8px}
+  .logo-preview img{display:block}
+  #cropperModal{position:fixed;inset:0;z-index:1050;display:none;background:rgba(0,0,0,.6);align-items:center;justify-content:center}
+  #cropperModal .box{width:min(92vw,860px);background:#fff;border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+  #cropperModal header,#cropperModal footer{padding:12px 16px;background:#f7f7f7}
+  #cropperModal .content{padding:12px}
+  #cropperImage{max-width:100%}
+</style>
+<style>
+  .style-option .preview-trigger{position:absolute;right:10px;top:10px;z-index:3;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+  #stylePreviewModal{position:fixed;inset:0;z-index:1051;display:none;background:rgba(0,0,0,.7);align-items:center;justify-content:center}
+  #stylePreviewModal .box{width:min(96vw,1200px);max-height:96vh;background:#fff;border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+  #stylePreviewModal header,#stylePreviewModal footer{padding:12px 16px;background:#f7f7f7;flex:0 0 auto}
+  #stylePreviewModal .content{padding:0;flex:1 1 auto;overflow:auto}
+  #stylePreviewImage{display:block;width:auto;height:auto;max-width:none;max-height:none}
+</style>
+<style>
+  
+.style-option.active {
+  outline: none;
+  transform: none;
+}
+
+.style-option:has(> input[type="radio"]:checked) {
+  outline: 2px solid #405189;
+  transform: translateY(-1px);
+}
+
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+  <div class="page-content">
+    <div class="container-fluid">
+
+      {% block pagetitle %}
+        {% include "partials/page-title.html" with pagetitle="Categorías" title="Configurar Estilos" %}
+      {% endblock pagetitle %}
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} mb-3">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h4 class="mb-0">Editando: <strong>{{ categoria.aNombre }}</strong></h4>
+        <a href="{% url 'listado_categorias_eventos' %}" class="btn btn-outline-secondary btn-sm">
+          ← Volver al listado
+        </a>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" id="form-estilos">
+        {% csrf_token %}
+        <input type="hidden" name="logo_cropped" id="logoCropped" />
+
+        <div class="row">
+          <div class="col-lg-8">
+            
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title mb-0">Estilo de página de detalles de evento</h5>
+              </div>
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="style-option {% if form.instance.estilo_detalle_evento == '1' %}active{% endif %}">
+                      <button type="button" class="btn btn-light btn-sm preview-trigger"
+                              data-img="{% static 'images/estilo1.png' %}" aria-label="Vista previa">🔍</button>
+                      <img class="style-thumb" src="{% static 'images/estilo1.png' %}" alt="Estilo 1">
+                      <div class="style-caption">Estilo 1</div>
+                      <input type="radio" name="estilo_detalle_evento" value="1"
+                             {% if form.instance.estilo_detalle_evento == '1' %}checked{% endif %}>
+                    </label>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="style-option {% if form.instance.estilo_detalle_evento == '2' %}active{% endif %}">
+                      <button type="button" class="btn btn-light btn-sm preview-trigger"
+                              data-img="{% static 'images/estilo2.png' %}" aria-label="Vista previa">🔍</button>
+                      <img class="style-thumb" src="{% static 'images/estilo2.png' %}" alt="Estilo 2">
+                      <div class="style-caption">Estilo 2</div>
+                      <input type="radio" name="estilo_detalle_evento" value="2"
+                             {% if form.instance.estilo_detalle_evento == '2' %}checked{% endif %}>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title mb-0">Logo de categoría (178×25 px)</h5>
+              </div>
+              <div class="card-body">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                  <div class="logo-preview">
+                    {% if categoria.logo %}
+                      <img id="previewLogo" src="{{ categoria.logo.url }}" width="178" height="25" alt="Logo actual">
+                    {% else %}
+                      <img id="previewLogo" src="{% static 'img/logo-placeholder-178x25.png' %}" width="178" height="25" alt="Sin logo">
+                    {% endif %}
+                  </div>
+                  <div>
+                    <input type="file" id="logoInput" accept="image/*" class="form-control mb-2">
+                    <div class="form-text">Al seleccionar un archivo se abrirá el recorte automático a <b>178×25</b>.</div>
+                    <div class="text-danger mt-2">{{ form.logo.errors }}</div>
+                  </div>
+                </div>
+                <div class="text-end mt-3">
+                  <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert alert-info">
+              <div class="d-flex">
+                <div class="me-2">ℹ️</div>
+                <div>El estilo elegido aplica a <b>todos</b> los eventos de la categoría <b>{{ categoria.aNombre }}</b>.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<div id="cropperModal">
+  <div class="box">
+    <header class="d-flex justify-content-between align-items-center">
+      <strong>Recortar logo (178×25)</strong>
+      <button type="button" class="btn-close" aria-label="Cerrar" id="btnCerrarModal"></button>
+    </header>
+    <div class="content">
+      <img id="cropperImage" alt="A recortar">
+    </div>
+    <footer class="d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-secondary" id="btnCancelar">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="btnAplicarRecorte">Aplicar recorte</button>
+    </footer>
+  </div>
+</div>
+
+<div id="stylePreviewModal">
+  <div class="box">
+    <header class="d-flex justify-content-between align-items-center">
+      <strong>Vista previa del estilo</strong>
+      <button type="button" class="btn-close" aria-label="Cerrar" id="btnCerrarStylePreview"></button>
+    </header>
+    <div class="content">
+      <img id="stylePreviewImage" alt="Vista previa de estilo">
+    </div>
+    <footer class="d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-secondary" id="btnCerrarStylePreview2">Cerrar</button>
+    </footer>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  const styleModal=document.getElementById('stylePreviewModal');
+  const styleImg=document.getElementById('stylePreviewImage');
+  const close1=document.getElementById('btnCerrarStylePreview');
+  const close2=document.getElementById('btnCerrarStylePreview2');
+  const openModal=(src)=>{styleImg.src=src;styleModal.style.display='flex';}
+  const closeModal=()=>{styleModal.style.display='none';styleImg.src='';}
+  close1.addEventListener('click',closeModal); close2.addEventListener('click',closeModal);
+  styleModal.addEventListener('click',(e)=>{if(e.target===styleModal)closeModal();});
+  document.addEventListener('keydown',(e)=>{if(e.key==='Escape' && styleModal.style.display==='flex')closeModal();});
+  document.querySelectorAll('.preview-trigger').forEach(btn=>{
+    btn.addEventListener('click',(e)=>{e.preventDefault();e.stopPropagation();openModal(btn.getAttribute('data-img'));});
+  });
+
+  const logoInput=document.getElementById('logoInput');
+  const logoCropped=document.getElementById('logoCropped');
+  const preview=document.getElementById('previewLogo');
+  const cropperModal=document.getElementById('cropperModal');
+  const cropImg=document.getElementById('cropperImage');
+  const btnClose=document.getElementById('btnCerrarModal');
+  const btnCancel=document.getElementById('btnCancelar');
+  const btnApply=document.getElementById('btnAplicarRecorte');
+  let cropper=null, tempURL=null;
+
+  const openCrop=()=>{cropperModal.style.display='flex';}
+  const closeCrop=()=>{cropperModal.style.display='none'; if(cropper){cropper.destroy();cropper=null;}}
+
+  btnClose.addEventListener('click',closeCrop);
+  btnCancel.addEventListener('click',closeCrop);
+  cropperModal.addEventListener('click',(e)=>{if(e.target===cropperModal)closeCrop();});
+
+  logoInput.addEventListener('change',(e)=>{
+    const file=e.target.files?.[0]; if(!file) return;
+    if(tempURL) URL.revokeObjectURL(tempURL);
+    tempURL=URL.createObjectURL(file);
+
+    const probe=new Image();
+    probe.onload=function(){
+      if(probe.naturalWidth===178 && probe.naturalHeight===25){
+        const reader=new FileReader();
+        reader.onload=function(ev){
+          logoCropped.value=ev.target.result;
+          if(preview) preview.src=ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }else{
+        cropImg.src=tempURL; openCrop();
+        if(cropper) cropper.destroy();
+        cropper=new Cropper(cropImg,{
+          viewMode:1,dragMode:'move',aspectRatio:178/25,autoCropArea:1,background:false,
+          movable:true,zoomable:true,rotatable:false,scalable:false,responsive:true
+        });
+      }
+    };
+    probe.src=tempURL;
+  });
+
+  btnApply.addEventListener('click',()=>{
+    if(!cropper) return;
+    const canvas=cropper.getCroppedCanvas({width:178,height:25});
+    if(!canvas) return;
+    const dataUrl=canvas.toDataURL('image/png');
+    logoCropped.value=dataUrl;
+    if(preview) preview.src=dataUrl;
+    closeCrop();
+  });
+});</script>
+{% endblock %}

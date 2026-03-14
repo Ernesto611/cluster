@@ -1,0 +1,229 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Compras en Efectivo Pendientes{% endblock title %}
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Entradas" title="Efectivo Pendiente" %}
+
+            <div class="card" id="enterList">
+                <div class="card-header border-0">
+                    <div class="row align-items-center gy-3">
+                        <div class="col-sm">
+                            <h5 class="card-title mb-0">Listado de Compras en Efectivo</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body border border-dashed border-end-0 border-start-0">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div id="table-counter" class="text-muted small" aria-live="polite">
+                            Mostrando 0–0 de 0 registros
+                        </div>
+                    </div>
+                    <br>
+                    <form method="get" class="row g-3 mb-3">
+                        <div class="d-flex flex-wrap align-items-end gap-3">
+                            <div class="flex-grow-1">
+                                <div class="search-box">
+                                    <input type="text" name="q" class="form-control" placeholder="Buscar por nombre, correo, entrada o referencia..." value="{{ q|default_if_none:'' }}">
+                                    <i class="ri-search-line search-icon"></i>
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="text-muted">Evento:</span>
+                                    <select name="evento" class="form-control mb-0" data-choices data-choices-search-false id="evento-select">
+                                        <option value="">Todos los eventos</option>
+                                        {% for evento in eventos %}
+                                            <option value="{{ evento.idEvento }}" {% if evento_id == evento.idEvento|stringformat:"s" %}selected{% endif %}>{{ evento.aNombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>                                
+                            <div class="flex-shrink-0">
+                                <button type="submit" class="btn btn-primary w-100"><i class="ri-filter-line"></i></button>
+                            </div>
+                        </div>    
+                    </form>
+                </div>
+                <br>
+
+                <div class="card-body pt-0">
+                    <div class="table-responsive table-card mb-1">
+                        <table class="table table-nowrap align-middle" id="orderTable">
+                            <thead class="text-muted table-light">
+                                <tr class="text-uppercase fs-13">
+                                    <th class="sort" data-sort="name">Nombre</th>
+                                    <th class="sort" data-sort="email">Correo</th>
+                                    <th class="sort" data-sort="entrada">Entrada</th>
+                                    <th class="sort" data-sort="evento">Evento</th>
+                                    <th class="sort" data-sort="monto">Monto</th>
+                                    <th>Referencia</th>
+                                    <th>Comprobante</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody class="list form-check-all">
+                                {% for compra in compras %}
+                                <tr>
+                                    <td class="name">{{ compra.usuario.aNombre }}</td>
+                                    <td class="email">{{ compra.usuario.email }}</td>
+                                    <td class="entrada">{{ compra.entrada.aNombre }}</td>
+                                    <td class="evento">{{ compra.entrada.idEvento.aNombre }}</td>
+                                    <td class="monto">${{ compra.monto_pago|floatformat:2 }}</td>
+                                    <td class="referencia">{{ compra.referencia_pago }}</td>
+                                    <td>
+                                        {% if compra.comprobante_pago %}
+                                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalComprobante{{ compra.idCompra }}">
+                                                Ver
+                                            </button>
+
+                                            <div class="modal fade" id="modalComprobante{{ compra.idCompra }}" tabindex="-1">
+                                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Comprobante</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body text-center">
+                                                            <img src="{{ compra.comprobante_pago.url }}" class="img-fluid rounded" alt="Comprobante">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">No subido</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-success btn-sm" onclick="confirmarPago('{{ compra.idCompra }}')">
+                                            Marcar como pagado
+                                        </button>
+                                        <form id="form-pago-{{ compra.idCompra }}" action="{% url 'marcar_pago_efectivo' compra.idCompra %}" method="POST" style="display:none;">
+                                            {% csrf_token %}
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No hay compras pendientes.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <div class="pagination-wrap hstack gap-2">
+                            <a class="page-item pagination-prev disabled" href="#">Anterior</a>
+                            <ul class="pagination listjs-pagination mb-0"></ul>
+                            <a class="page-item pagination-next" href="#">Siguiente</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "partials/footer.html" %}
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'libs/list.js/dist/list.min.js' %}"></script>
+<script src="{% static 'libs/list.pagination.js/dist/list.pagination.min.js' %}"></script>
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'error',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+<script>
+    var options = {
+        valueNames: ['name', 'email', 'entrada', 'evento', 'monto', 'referencia'],
+        page: 10,
+        pagination: true
+    };
+
+    var enterList = new List('enterList', options);
+
+    function renderCounter(list) {
+        const el = document.getElementById('table-counter');
+        if (!el) return;
+
+        const total = list.matchingItems ? list.matchingItems.length : list.size();
+
+        let start = 0, end = 0;
+        if (total > 0) {
+
+            start = list.i;
+            end = list.i + list.visibleItems.length - 1;
+        }
+
+        const sufijo = (total === 1) ? 'registro' : 'registros';
+        el.textContent = `Mostrando ${start}–${end} de ${total} ${sufijo}`;
+    }
+
+    function togglePaginationControls() {
+        const paginationContainer = document.querySelector('.pagination-wrap');
+        const totalItems = enterList.matchingItems ? enterList.matchingItems.length : enterList.size();
+        const itemsPerPage = enterList.page;
+
+        if (totalItems <= itemsPerPage) {
+            paginationContainer.style.display = 'none';
+        } else {
+            paginationContainer.style.display = 'flex';
+        }
+    }
+
+    renderCounter(enterList);
+    togglePaginationControls();
+
+    enterList.on('updated', function (list) {
+        renderCounter(list);
+        togglePaginationControls();
+    });
+
+    function confirmarPago(idCompra) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: 'Esta acción marcará la compra como pagada.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, marcar como pagado',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('form-pago-' + idCompra).submit();
+            }
+        });
+    }</script>
+{% endblock extra_js %}

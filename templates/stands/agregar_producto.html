@@ -1,0 +1,73 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Agregar Producto{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'libs/dropzone/dist/dropzone.css' %}" rel="stylesheet" />
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Productos" title="Agregar Producto" %}
+            {% endblock pagetitle %}
+            
+            <div class="alert alert-danger" {% if not form.errors %}style="display: none;"{% endif %}>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field }}: {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Información del Producto</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre</label>
+                                    {{ form.aNombre }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Imagen</label>
+                                    <input type="file" class="form-control" id="producto-image-input" name="aImagen" accept="image/*" onchange="previewImage(event)">
+                                    <div class="mt-2">
+                                        <img id="producto-image-preview" src="#" alt="Imagen Previa" class="img-fluid" style="display: none; max-width: 200px;"/>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Precio</label>
+                                    {{ form.nPrecio }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-end mb-3">
+                        <button type="submit" class="btn btn-primary">Guardar Producto</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('producto-image-preview');
+            output.src = reader.result;
+            output.style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }</script>
+
+{% endblock %}

@@ -1,0 +1,668 @@
+{% extends "web/layouts/base.html" %}
+{% load static %}
+{% block title %}Inicio{% endblock title %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
+{% endblock extra_css %}
+
+{% block content %}
+
+<section class="banner" style="background-image: url('{{ banners.0.imagen.url }}'); height: auto !important;">
+    <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% for banner in banners %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    {% if banner.url %}
+                        <a href="{{ banner.url }}" target="_blank">
+                            <img src="{{ banner.imagen.url }}" class="d-block w-100" alt="{{ banner.titulo }}">
+                        </a>
+                    {% else %}
+                        <img src="{{ banner.imagen.url }}" class="d-block w-100" alt="{{ banner.titulo }}">
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+        </button>
+    </div>
+</section>
+
+{% include "web/layouts/notification_button.html" %}
+
+<section class="about padding-120">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2>Calendario de Eventos</h2>
+        </div>
+        <div id="calendar"></div>
+    </div>
+</section>
+
+<section class="about padding-120">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2>Acerca de REGISTRO EVENTOS CLUSTERTIM</h2>
+        </div>
+        <p>En Clustertim abrimos un nuevo espacio de vinculación y colaboración a través de nuestros desayunos tecnológicos, una iniciativa que busca acercar los servicios, soluciones y capacidades de las empresas del sector tecnológico a potenciales aliados, clientes y usuarios finales...</p>
+    </div>
+</section>
+
+{% block footer %}
+    {% include "web/layouts/footer.html" %}
+{% endblock footer %}
+
+{% endblock content %}
+
+{% block extra_js %}
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales-all.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+
+            function getColorByCategory(categoriaId) {
+                const colors = {
+                    1: '#fd7e14',
+                    2: '#0d6efd',
+                    3: '#20c997',
+                    4: '#6f42c1',
+                    5: '#dc3545',
+                    6: '#ffc107',
+                    7: '#6c757d',
+                    8: '#e83e8c'
+                };
+
+                return colors[categoriaId] || '#' + Math.floor(Math.random()*16777215).toString(16);
+            }
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                firstDay: 1,
+                locale: 'es',
+                selectable: false,
+                validRange: {
+                    start: new Date().toISOString().split('T')[0]
+                },
+                events: [
+                    {% for evento in eventos %}
+                        {
+                            title: '{{ evento.aNombre|escapejs }}',
+                            start: '{{ evento.fFechaInicio|date:"Y-m-d" }}',
+                            url: '{% url "evento_detalles" evento.idEvento %}',
+                            backgroundColor: getColorByCategory({{ evento.categoria.idCategoria|default:1 }}),
+                            borderColor: getColorByCategory({{ evento.categoria.idCategoria|default:1 }})
+                        },
+                    {% endfor %}
+                ]
+            });
+            calendar.render();
+        });
+</script>
+{% endblock extra_js %}
+
+{% block scripts %}
+<script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+
+<script>
+
+let isSubscribed = false;
+let isLoading = false;
+let notificationFloatShown = false;
+
+window.OneSignal = window.OneSignal || [];
+OneSignal.push(function () {
+    OneSignal.init({
+        appId: "6120b083-c3ed-46a3-ae80-a271a13f1b1e",
+        serviceWorkerPath: "/serviceworker.js",
+        serviceWorkerScope: "/",
+        serviceWorkerUpdaterPath: "/serviceworker.js",
+        notifyButton: {
+            enable: false
+        },
+        allowLocalhostAsSecureOrigin: true,
+        autoRegister: false,
+        autoResubscribe: false
+    });
+
+    setTimeout(() => {
+        checkSubscriptionStatus();
+    }, 1000);
+});
+
+async function checkSubscriptionStatus() {
+    try {
+        if (window.OneSignal) {
+            const isEnabled = await OneSignal.isPushNotificationsEnabled();
+            const subscription = await OneSignal.getSubscription();
+            const permission = Notification.permission;
+
+            let userId = null;
+            try {
+
+                userId = await OneSignal.User.onesignalId;
+
+                if (!userId) {
+                    userId = await OneSignal.getUserId();
+                }
+            } catch (e) {
+                console.log('Could not get user ID yet:', e.message);
+
+                try {
+                    const pushSubscription = await OneSignal.User.pushSubscription.id;
+                    userId = pushSubscription;
+                } catch (e2) {
+                    console.log('Push subscription ID also unavailable:', e2.message);
+                }
+            }
+
+            console.log('Initial check:');
+            console.log('- Permission:', permission);
+            console.log('- Push enabled:', isEnabled);
+            console.log('- Subscription:', subscription);
+            console.log('- User ID:', userId);
+
+            const hasPermission = permission === "granted";
+            const hasSubscription = subscription && (subscription.id || subscription === true);
+            const hasUserId = userId && userId.length > 0;
+
+            const hasValidSubscription = hasPermission && (isEnabled || hasSubscription || hasUserId);
+
+            console.log('Final determination:', hasValidSubscription);
+
+            updateFloatUI(hasValidSubscription);
+
+            if (!hasValidSubscription) {
+                showNotificationFloat();
+            }
+        } else {
+            updateFloatUI(false);
+
+            setTimeout(() => {
+                if (!notificationFloatShown) {
+                    showNotificationFloat();
+                }
+            }, 3000);
+        }
+    } catch (error) {
+        console.error("Error checking subscription status:", error);
+        updateFloatUI(false);
+        setTimeout(() => {
+            if (!notificationFloatShowed) {
+                showNotificationFloat();
+            }
+        }, 3000);
+    }
+}
+
+function updateFloatUI(subscribed) {
+    isSubscribed = subscribed;
+
+    const icon = document.getElementById('notificationIconFloat');
+    const title = document.getElementById('notificationTitleFloat');
+    const subtitle = document.getElementById('notificationSubtitleFloat');
+    const button = document.getElementById('actionButton');
+    const buttonText = document.getElementById('buttonTextFloat');
+
+    if (!icon || !title || !subtitle || !button || !buttonText) return;
+
+    if (subscribed) {
+        icon.className = 'notification-icon-float active';
+        icon.style.backgroundColor = '#dcfce7';
+        icon.style.color = '#16a34a';
+        title.textContent = '¡Notificaciones activas!';
+        subtitle.textContent = 'Recibirás alertas de eventos';
+        button.className = 'notification-button-float btn-action active';
+        buttonText.textContent = 'Activadas';
+
+        icon.innerHTML = `
+            <svg class="icon-float" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                <path d="m13.73 21a2 2 0 0 1-3.46 0"></path>
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+            </svg>
+        `;
+
+        setTimeout(() => {
+            hideNotificationFloat();
+        }, 3000);
+
+    } else {
+        icon.className = 'notification-icon-float';
+        icon.style.backgroundColor = '#dbeafe';
+        icon.style.color = '#2563eb';
+        title.textContent = '¿Activar notificaciones?';
+        subtitle.textContent = 'Recibe alertas de eventos';
+        button.className = 'notification-button-float btn-action';
+        buttonText.textContent = 'Activar';
+
+        icon.innerHTML = `
+            <svg class="icon-float" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                <path d="m13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+        `;
+    }
+}
+
+function setLoadingFloat(loading) {
+    isLoading = loading;
+    const button = document.getElementById('actionButton');
+    const buttonText = document.getElementById('buttonTextFloat');
+    const spinner = document.getElementById('loadingSpinnerFloat');
+
+    if (!button || !buttonText || !spinner) return;
+
+    button.disabled = loading;
+    buttonText.style.display = loading ? 'none' : 'block';
+    spinner.style.display = loading ? 'block' : 'none';
+}
+
+async function toggleNotifications() {
+    if (isLoading) return;
+
+    setLoadingFloat(true);
+
+    try {
+        if (isSubscribed) {
+
+            await OneSignal.setSubscription(false);
+            updateFloatUI(false);
+        } else {
+
+            if (!("Notification" in window)) {
+                alert("Este navegador no soporta notificaciones push");
+                return;
+            }
+
+            const permission = Notification.permission;
+            console.log('Current permission:', permission);
+
+            if (permission === "denied") {
+                alert("Las notificaciones están bloqueadas. Por favor, actívalas manualmente en la configuración del navegador.");
+                return;
+            }
+
+            if (permission === "default") {
+                showCustomPrompt();
+            } else if (permission === "granted") {
+
+                try {
+                    await OneSignal.setSubscription(true);
+
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    const isEnabled = await OneSignal.isPushNotificationsEnabled();
+                    const subscription = await OneSignal.getSubscription();
+
+                    console.log('After subscription - enabled:', isEnabled, 'subscription:', subscription);
+
+                    const hasValidSubscription = isEnabled && subscription && subscription.id;
+                    updateFloatUI(hasValidSubscription);
+
+                    if (!hasValidSubscription) {
+                        console.error('Failed to create valid subscription');
+                        alert("No se pudo completar la suscripción. Por favor, intenta de nuevo.");
+                    }
+                } catch (subError) {
+                    console.error('Error during subscription:', subError);
+                    alert("Error al suscribirse a las notificaciones. Por favor, intenta de nuevo.");
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Error toggling notifications:", error);
+        alert("Error al cambiar el estado de las notificaciones. Por favor, intenta de nuevo.");
+    } finally {
+        setLoadingFloat(false);
+    }
+}
+
+function showNotificationFloat() {
+    const floatElement = document.getElementById('notificationFloat');
+    if (floatElement && !notificationFloatShown) {
+        floatElement.style.display = 'block';
+        notificationFloatShown = true;
+
+        setTimeout(() => {
+            if (!isSubscribed) {
+                hideNotificationFloat();
+            }
+        }, 10000);
+    }
+}
+
+function hideNotificationFloat() {
+    const floatElement = document.getElementById('notificationFloat');
+    if (floatElement) {
+        floatElement.classList.add('hiding');
+        setTimeout(() => {
+            floatElement.style.display = 'none';
+            floatElement.classList.remove('hiding');
+        }, 300);
+    }
+}
+
+function showCustomPrompt() {
+    document.getElementById('notificationOverlay').style.display = 'flex';
+}
+
+function hideCustomPrompt() {
+    document.getElementById('notificationOverlay').style.display = 'none';
+}
+
+async function handlePromptResponse(accepted) {
+    hideCustomPrompt();
+
+    if (accepted) {
+        try {
+            setLoadingFloat(true);
+
+            console.log('User accepted prompt, requesting permissions...');
+
+            let attempts = 0;
+            const maxAttempts = 3;
+            let success = false;
+
+            while (attempts < maxAttempts && !success) {
+                attempts++;
+                console.log(`Attempt ${attempts}/${maxAttempts}`);
+
+                try {
+
+                    await OneSignal.registerForPushNotifications();
+
+                    const waitTime = attempts * 1500;
+                    console.log(`Waiting ${waitTime}ms for registration to complete...`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+
+                    await OneSignal.setSubscription(true);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    const isEnabled = await OneSignal.isPushNotificationsEnabled();
+                    const subscription = await OneSignal.getSubscription();
+                    const permission = Notification.permission;
+
+                    console.log(`After attempt ${attempts}:`);
+                    console.log('- Permission:', permission);
+                    console.log('- Enabled:', isEnabled);
+                    console.log('- Subscription:', subscription);
+
+                    const hasPermission = permission === "granted";
+                    const hasSubscription = subscription && (subscription.id || subscription === true);
+                    const isEnabledOrSubscribed = isEnabled || hasSubscription;
+
+                    if (hasPermission && isEnabledOrSubscribed) {
+                        success = true;
+                        updateFloatUI(true);
+                        console.log(`¡Notificaciones activadas correctamente en el intento ${attempts}!`);
+
+                        const title = document.getElementById('notificationTitleFloat');
+                        const subtitle = document.getElementById('notificationSubtitleFloat');
+                        if (title && subtitle) {
+                            title.textContent = '¡Listo!';
+                            subtitle.textContent = 'Notificaciones activadas';
+                        }
+                        break;
+                    } else {
+                        console.log(`Attempt ${attempts} failed - retrying...`);
+                        if (attempts === maxAttempts) {
+
+                            console.log('Max attempts reached. Final state:');
+                            console.log('- Has permission:', hasPermission);
+                            console.log('- Has subscription:', hasSubscription);
+                            console.log('- Is enabled:', isEnabled);
+                        }
+                    }
+                } catch (attemptError) {
+                    console.error(`Error in attempt ${attempts}:`, attemptError);
+                    if (attempts === maxAttempts) {
+                        throw attemptError;
+                    }
+                }
+            }
+
+            if (!success) {
+                updateFloatUI(false);
+
+                const finalPermission = Notification.permission;
+                const finalEnabled = await OneSignal.isPushNotificationsEnabled().catch(() => false);
+                const finalSubscription = await OneSignal.getSubscription().catch(() => null);
+
+                console.log('Final verification:');
+                console.log('- Permission:', finalPermission);
+                console.log('- Enabled:', finalEnabled);
+                console.log('- Subscription:', finalSubscription);
+
+                if (finalPermission !== "granted") {
+                    alert("No se otorgaron los permisos de notificación. Por favor, permite las notificaciones en tu navegador y recarga la página.");
+                } else if (finalPermission === "granted" && (finalEnabled || finalSubscription)) {
+
+                    console.log("Marking as success based on final verification");
+                    updateFloatUI(true);
+                } else {
+                    alert("Las notificaciones se configuraron pero pueden tardar unos momentos en estar completamente activas. Si no recibes notificaciones, intenta recargar la página.");
+
+                    updateFloatUI(true);
+                }
+            }
+
+        } catch (error) {
+            console.error("Error al activar notificaciones:", error);
+            updateFloatUI(false);
+
+            if (error.message && error.message.includes('denied')) {
+                alert("Los permisos de notificación fueron denegados. Por favor, permite las notificaciones manualmente en tu navegador.");
+            } else if (error.message && error.message.includes('not supported')) {
+                alert("Tu navegador no soporta notificaciones push o están deshabilitadas.");
+            } else {
+                alert("Ocurrió un error al activar notificaciones. Por favor, recarga la página e intenta de nuevo.");
+            }
+        } finally {
+            setLoadingFloat(false);
+        }
+    } else {
+        setLoadingFloat(false);
+        setTimeout(() => {
+            hideNotificationFloat();
+        }, 1000);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    const overlay = document.getElementById('notificationOverlay');
+    if (overlay) {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideCustomPrompt();
+                setLoadingFloat(false);
+            }
+        });
+    }
+});
+
+function showNotificationManually() {
+    notificationFloatShown = false;
+    showNotificationFloat();
+}
+
+async function debugNotificationStatus() {
+    console.log('=== DEBUG NOTIFICATION STATUS ===');
+    console.log('Browser support:', 'Notification' in window);
+    console.log('Current permission:', Notification.permission);
+
+    if (window.OneSignal) {
+        try {
+            const enabled = await OneSignal.isPushNotificationsEnabled();
+            console.log('OneSignal push enabled:', enabled);
+
+            const subscription = await OneSignal.getSubscription();
+            console.log('OneSignal subscription:', subscription);
+
+            let userId = null;
+            try {
+
+                userId = await OneSignal.User.onesignalId;
+                console.log('🎯 USER ID (new method):', userId);
+
+                if (!userId) {
+
+                    userId = await OneSignal.getUserId();
+                    console.log('🎯 USER ID (getUserId):', userId);
+                }
+
+                if (!userId) {
+
+                    const pushSub = await OneSignal.User.pushSubscription.id;
+                    console.log('🎯 PUSH SUBSCRIPTION ID:', pushSub);
+                    userId = pushSub;
+                }
+            } catch (userIdError) {
+                console.log('Error getting user ID:', userIdError.message);
+
+                try {
+                    const externalId = await OneSignal.getExternalUserId();
+                    console.log('External user ID:', externalId);
+                } catch (extError) {
+                    console.log('External ID also failed:', extError.message);
+                }
+            }
+
+            console.log('Current UI state - isSubscribed:', isSubscribed);
+            console.log('Service Worker registration:', navigator.serviceWorker ? 'Supported' : 'Not supported');
+
+            if (navigator.serviceWorker) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                console.log('Active service workers:', registrations.length);
+                registrations.forEach((reg, index) => {
+                    console.log(`SW ${index + 1}:`, reg.scope);
+                });
+            }
+
+            if (userId) {
+                console.log('✅ NOTIFICACIONES FUNCIONANDO - User ID encontrado');
+            } else {
+                console.log('❌ Posible problema - No hay User ID');
+            }
+
+        } catch (error) {
+            console.error('Debug error:', error);
+        }
+    } else {
+        console.log('OneSignal not loaded yet');
+    }
+    console.log('================================');
+}
+
+async function sendTestNotification() {
+    try {
+        let userId = null;
+
+        try {
+            userId = await OneSignal.getUserId();
+            if (!userId) {
+                userId = await OneSignal.getUserId();
+            }
+            if (!userId) {
+                const pushSub = await OneSignal.User.pushSubscription.id;
+                userId = pushSub;
+            }
+        } catch (e) {
+            console.error('Error getting user ID:', e);
+        }
+
+        if (userId) {
+            console.log('User ID encontrado:', userId);
+            console.log('🔔 Para enviar una notificación de prueba:');
+            console.log('1. Ve a tu dashboard de OneSignal');
+            console.log('2. Busca este User ID:', userId);
+            console.log('3. Envía una notificación de prueba desde allí');
+            console.log('O usa la API de OneSignal con este User ID');
+
+            if (Notification.permission === 'granted') {
+                new Notification('Prueba de notificación', {
+                    body: 'Si ves esto, las notificaciones locales funcionan',
+                    icon: '/favicon.ico'
+                });
+                console.log('📱 Notificación local enviada');
+            }
+
+        } else {
+            console.log('❌ No se encontró User ID - puede haber un problema');
+        }
+    } catch (error) {
+        console.error('Error enviando notificación de prueba:', error);
+    }
+}
+
+async function forceRecheck() {
+    console.log('Forcing recheck...');
+    try {
+        await checkSubscriptionStatus();
+        console.log('Recheck completed');
+    } catch (error) {
+        console.error('Recheck failed:', error);
+    }
+}
+
+async function resetNotificationState() {
+    try {
+        if (window.OneSignal) {
+            await OneSignal.setSubscription(false);
+            console.log('Subscription disabled');
+            updateFloatUI(false);
+            notificationFloatShown = false;
+            showNotificationFloat();
+        }
+    } catch (error) {
+        console.error('Reset failed:', error);
+    }
+}</script>
+{% if request.user.is_authenticated %}
+<script>
+OneSignal.push(function () {
+    setTimeout(async () => {
+        try {
+            const permission = Notification.permission;
+            const isEnabled = await OneSignal.isPushNotificationsEnabled();
+            const playerId = await OneSignal.getUserId();
+
+            console.log('Permiso:', permission);
+            console.log('OneSignal habilitado:', isEnabled);
+            console.log('Player ID detectado tras iniciar sesión:', playerId);
+
+            if (playerId) {
+                fetch('{% url "registrar_player_id" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ player_id: playerId })
+                }).then(response => {
+                    if (!response.ok) {
+                        console.error("Error al registrar player_id");
+                    } else {
+                        console.log("✅ Player ID registrado correctamente");
+                    }
+                });
+            } else {
+                console.warn("❌ No se registró player ID (no cumple condiciones)");
+            }
+        } catch (error) {
+            console.error("Error verificando player_id al iniciar sesión:", error);
+        }
+    }, 1000);
+});</script>
+{% endif %}
+
+{% endblock scripts %}

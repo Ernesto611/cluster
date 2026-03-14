@@ -1,0 +1,884 @@
+// Varibales
+$arvo:'Arvo',
+serif;
+$body-color:#00163f;
+$theme-color:#df01ae;
+$white-color: #ffffff;
+$grey-color: #555555;
+
+@import "sub-stylesheets/extend";
+@import "sub-stylesheets/mixins";
+
+/*======== Common Css start here ===========*/
+
+//Google fonts
+@import url('https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+
+body {
+    background: $body-color;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    clear: both;
+    line-height: 1;
+    font-weight: 700;
+    color: $white-color !important;
+    text-transform: capitalize;
+    margin: 0;
+    padding: 0;
+    font-family: $arvo;
+}
+
+p {
+    color: $white-color !important;
+}
+
+h1 {
+    font-size: 48px;
+
+    @include breakpoint(sm) {
+        font-size: 70px;
+    }
+}
+
+h2 {
+    font-size: 35px;
+
+    @include breakpoint(sm) {
+        font-size: 48px;
+    }
+}
+
+h3 {
+    font-size: 30px;
+
+    @include breakpoint(sm) {
+        font-size: 35px;
+    }
+}
+
+h4 {
+    font-size: 24px;
+
+    @include breakpoint(sm) {
+        font-size: 30px;
+    }
+}
+
+h5 {
+    font-size: 20px;
+
+    @include breakpoint(sm) {
+        font-size: 24px;
+    }
+}
+
+h6 {
+    font-size: 18px;
+
+    @include breakpoint(sm) {
+        font-size: 20px;
+    }
+}
+
+.lab-btn {
+    display: inline-block;
+    line-height: 56px;
+    padding: 0 2.2rem;
+    transition: .3s;
+    box-shadow: 3px 3px 0 currentColor;
+    border-radius: 4px;
+    font-family: $arvo;
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 700;
+    text-transform: capitalize !important;
+    color: $theme-color !important;
+    background: $white-color;
+
+    &:hover {
+        box-shadow: none;
+        color: currentColor;
+    }
+}
+
+//common header
+.section-header {
+    max-width: 600px;
+    margin: 0 auto;
+    margin-bottom: 40px !important;
+    @extend %text-center;
+
+    h2 {
+        text-shadow: 2px 2px 0 $theme-color;
+        @extend %mb-20;
+        @extend %rel;
+        z-index: 9 !important;
+
+        &:after {
+            @extend %abs;
+            width: 210px;
+            height: 210px;
+            background: url(../../images/index-14/shapes/header.png);
+            background-size: contain;
+            background-repeat: no-repeat;
+            top: -85px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: -1;
+        }
+    }
+
+    p {
+        font-family: $arvo;
+        font-size: 16px;
+        letter-spacing: .5rem;
+        @extend %mb-0;
+    }
+}
+
+.sponsor-14 {
+    background: url(../../images/index-14/event/01.png);
+    background-size: cover;
+}
+
+/*======== Common Css end here ===========*/
+
+
+/*======== header css start here  =========*/
+.header-14 {
+    .menu-14 {
+        background: rgba($body-color, $alpha: .95);
+        // background-color: rgba(0, 22, 63, 0.302);
+        box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.2);
+
+        .header-cart-ticket-option {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+
+            .menu_cart {
+                span {
+                    &:before {
+                        background: $theme-color;
+                    }
+                }
+            }
+
+            .lab-btn {
+                background-color: $white-color !important;
+                padding: 0 1rem !important;
+                color: $theme-color;
+
+                @include breakpoint(lg) {
+                    padding: 0 2rem !important;
+                }
+            }
+        }
+
+
+
+        .navbar-right {
+            .dropdown {
+                .dropdown-menu {
+                    background: $body-color;
+
+                    li {
+                        &.active {
+                            a {
+                                background: $theme-color !important;
+                                color: $white-color !important;
+                            }
+                        }
+
+                        a {
+                            &:hover {
+                                background: $theme-color;
+                                color: $white-color;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/*======== header css end here  =========*/
+
+
+/*======== Banner css start here  =========*/
+.banner-14 {
+    background: url(../../images/index-14/banner/bg.jpg);
+    background-size: cover;
+
+    .banner-wrapper {
+        padding: 80px 0;
+
+        @include breakpoint(lg) {
+            padding-top: 250px;
+            padding-bottom: 85px;
+
+        }
+
+        .banner-content {
+            .countdown {
+                @extend %flex;
+
+                @include breakpoint(max-lg) {
+                    justify-content: center;
+                }
+
+                column-gap: 20px;
+                row-gap: 15px;
+                @extend %mb-30;
+
+                .clock-item {
+                    list-style: none;
+                    width: 70px;
+                    height: 80px;
+
+                    .count-number {
+                        background: $theme-color;
+                        color: $white-color;
+                        font-size: 30px;
+                        font-weight: 700;
+                        font-family: $arvo;
+                        padding: 1rem;
+                        display: inline-block;
+                        width: 100%;
+                        text-align: center;
+                        line-height: 1;
+                        border-radius: 4px 4px 0 0;
+                    }
+
+                    .count-text {
+                        background: $white-color;
+                        font-family: $arvo;
+                        font-size: 18px;
+                        color: $body-color !important;
+                        padding: .5rem 1rem;
+                        margin-bottom: 0;
+                        display: inline-block;
+                        width: 100%;
+                        text-align: center;
+                        line-height: 1;
+                        border-radius: 0 0 4px 4px;
+                    }
+                }
+            }
+
+            h1 {
+                text-shadow: 2px 2px 0 $theme-color;
+                font-style: italic;
+                line-height: 1.286;
+                margin-bottom: 18px;
+
+                @include breakpoint(sm) {
+                    font-size: 60px;
+                }
+
+                @include breakpoint(xl) {
+                    font-size: 70px;
+                }
+            }
+
+            p {
+                max-width: 390px;
+                font-size: 18px;
+                font-family: $arvo;
+                line-height: 2;
+
+                @include breakpoint(max-lg) {
+                    margin: 0 auto 30px;
+                }
+            }
+
+            .lab-btn {
+                margin-bottom: 50px;
+            }
+
+            .event-sponsored {
+                @extend %flex;
+                @extend %align-items-center;
+
+                @include breakpoint(max-sm) {
+                    justify-content: center;
+                }
+
+                p {
+                    margin-bottom: 0;
+                }
+
+                img {
+                    margin-left: 20px;
+                }
+            }
+        }
+    }
+}
+
+/*======== Banner css end here  =========*/
+
+.about {
+    .section-header {
+        h2 {
+            &:after {
+                top: -40px;
+            }
+        }
+    }
+}
+
+
+/*======== Event Schedule css start here  =========*/
+.event-schedule-section {
+    background: url(../../images/index-14/event/01.png);
+    background-size: cover;
+
+    .event-schedule-trigger {
+        .title {
+            @extend %bg-white;
+            color: $theme-color !important;
+            @extend %text-center;
+            padding: 1.3rem;
+            @extend %mb-0;
+            border-radius: 4px;
+            border-top: 5px solid $theme-color;
+        }
+
+        .panel-group {
+            .panel {
+                background: none;
+                border: none;
+                border-radius: 4px;
+
+                .faq-heading {
+                    .faq-title {
+
+
+                        a {
+                            background: $white-color;
+                            border-bottom: none;
+                            @extend %p-15;
+                            height: auto;
+                            line-height: inherit;
+                            @extend %flex;
+                            @extend %justify-between;
+                            @extend %align-items-center;
+
+
+                            .ev-title {
+                                @extend %flex;
+                                @extend %align-items-center;
+                                column-gap: 15px;
+                                row-gap: 15px;
+
+                                .ev-title-thumb {
+                                    border: 2px solid $white-color;
+                                    border-radius: 50%;
+
+
+                                    img {
+                                        @extend %w-100;
+                                    }
+
+                                    .child-thumb {
+                                        @extend %abs;
+                                        z-index: 1;
+                                        opacity: 1;
+                                        transition: .3s all linear;
+                                        border: 2px solid $white-color;
+                                        border-radius: 50%;
+                                        transform: translateY(-10px);
+
+                                        @include breakpoint(max-sm) {
+                                            transform: translate(40px, -52px);
+                                        }
+                                    }
+                                }
+
+                                .ev-title-content {
+                                    h6 {
+                                        color: $theme-color !important;
+                                    }
+                                }
+                            }
+
+                            .faq-icon {
+                                border-left: none;
+
+                                @include breakpoint(max-sm) {
+                                    display: none;
+                                }
+
+                                i {
+                                    color: $theme-color;
+                                }
+                            }
+
+                            p {
+                                color: $theme-color !important;
+                                @extend %mb-0;
+
+                                @include breakpoint(max-sm) {
+                                    display: none;
+                                }
+                            }
+
+                            &.collapsed {
+                                background: rgba($white-color, $alpha: .10);
+
+                                .ev-title-thumb {
+                                    .child-thumb {
+                                        @extend %abs;
+                                        z-index: 1;
+                                        opacity: 0;
+                                        border: 2px solid $white-color;
+                                        border-radius: 50%;
+                                    }
+                                }
+
+                                .ev-title-content {
+                                    h6 {
+                                        color: $white-color !important;
+                                        transition: .3s;
+                                    }
+                                }
+
+                                .faq-icon {
+                                    i {
+                                        color: $white-color;
+                                    }
+                                }
+
+                                p {
+                                    color: $white-color !important;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                .faq-collapse {
+                    .faq-body {
+                        @extend %rel;
+                        @extend %bg-white;
+                        @extend %pt-0;
+                        text-align: left;
+
+                        @include breakpoint(sm) {
+                            padding-left: 85px;
+                        }
+
+                        p {
+                            color: $grey-color !important;
+                        }
+
+                        .ev-list {
+                            @extend %flex;
+                            column-gap: 15px;
+
+                            .ev-li-item {
+                                list-style: none;
+
+                                i {
+                                    color: $theme-color;
+                                    font-size: 16px;
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+/*======== Event Schedule css end here  =========*/
+
+
+/*======== Speaker item start here =========*/
+.speaker-item {
+    .speaker-inner {
+        @extend %flex;
+        align-items: flex-end;
+        @extend %w-100;
+        column-gap: 30px;
+
+        .speaker-thumb {
+            @extend %rel;
+            width: 40%;
+
+            &:after {
+                @extend %abs;
+                bottom: 0;
+                left: -20px;
+                width: 250px;
+                height: 250px;
+                background: url(../../images/index-14/speakers/bg.png);
+                z-index: -1;
+                background-size: cover;
+            }
+        }
+
+        .speaker-content {
+            width: calc(100% - 40% - 30px);
+            @extend %pb-20;
+
+            .spkr-content-title {
+                h5 {
+                    @extend %mb-5;
+                }
+
+                p {
+                    @extend %mb-15;
+                    font-size: 16px;
+                }
+            }
+
+            .spkr-content-details {
+                p {
+                    @extend %mb-15;
+                    font-size: 16px;
+                }
+
+                .social-icons {
+                    @extend %flex;
+                    column-gap: 15px;
+
+                    li {
+                        list-style: none;
+
+                        a {
+
+
+                            i {
+                                color: $white-color;
+                                font-size: 16px;
+                                transition: .3s linear;
+                            }
+
+                            &:hover {
+                                i {
+                                    color: $theme-color;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/*======== Speaker item end here =========*/
+
+/*======== Pricing Plan item start here =========*/
+.pricing-plan-section {
+    .section-wrapper {
+        .row {
+            @extend %flex;
+            @extend %justify-center;
+            row-gap: 30px;
+        }
+    }
+}
+
+.pricing-item {
+    .pricing-inner {
+        box-shadow: 0px 0px 20px 0px rgba(255, 255, 255, 0.1);
+
+        .pricing-header {
+            background: url(../../images/index-14/pricing-plan/01.svg);
+            background-size: cover;
+            background-position: center;
+            padding: 50px;
+            border-radius: 6px 6px 0 0;
+            @extend %text-center;
+
+            h3 {
+                @extend %mb-10;
+            }
+
+            p {
+                @extend %mb-0;
+                font-family: $arvo;
+                font-size: 16px;
+            }
+        }
+
+        .pricing-content {
+            .facilites {
+                padding: 30px 25px;
+                @extend %mb-0;
+
+                .facility-item {
+                    text-align: left;
+                    list-style: none;
+                    font-size: 16px;
+                    color: $white-color;
+                    padding: 6px 0;
+
+
+                    span {
+                        @extend %mr-15;
+
+                        i {
+                            color: $theme-color;
+                            font-size: 20px;
+
+                            @extend %rel;
+
+                            &:after {
+                                @extend %abs;
+                                height: 90%;
+                                width: 2px;
+                                background: $theme-color;
+                                bottom: -18px;
+                                left: 50%;
+                                transform: translateX(-50%);
+                            }
+                        }
+                    }
+
+                    &:last-child {
+                        span {
+                            i {
+                                &:after {
+                                    display: none;
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+            }
+
+            .get-ticket {
+                border-top: 1px solid rgba($white-color, $alpha: .10);
+                border-radius: 0 0 6px 6px;
+                @extend %hidden;
+
+                a {
+                    @extend %p-20;
+                    display: block;
+
+                    @include breakpoint(sm) {
+                        padding: 20px 30px;
+                    }
+
+                    ul {
+                        @extend %flex;
+                        @extend %justify-between;
+                        @extend %mb-0;
+                        @extend %align-items-center;
+
+                        li {
+                            list-style: none;
+
+                            p {
+                                @extend %mb-0;
+                                font-family: $arvo;
+                            }
+
+                            &.vat {
+                                @extend %flex;
+                                align-items: flex-end;
+
+                                h4 {
+                                    @extend %mr-5;
+                                    color: $theme-color !important;
+                                }
+
+                                p {
+                                    color: $theme-color !important;
+
+                                }
+                            }
+
+                            &.icon {
+                                width: 40px;
+                                height: 40px;
+                                line-height: 40px;
+                                border-radius: 50%;
+                                @extend %bg-white;
+                                ;
+                                @extend %text-center;
+                                transition: .2s all linear;
+                                @extend %rel;
+                                z-index: 9;
+
+                                &:after {
+                                    @extend %abs;
+                                    width: 1px;
+                                    height: 80px;
+                                    left: 50%;
+                                    transform: translateX(-50%);
+                                    top: -20px;
+                                    background-color: rgba($white-color, $alpha: .10);
+                                    z-index: -1;
+                                }
+                            }
+
+                            &.ticket-text {
+                                p {
+                                    font-weight: 700;
+                                }
+                            }
+                        }
+                    }
+
+                    &:hover {
+                        ul {
+                            .icon {
+                                @extend %bg-theme;
+                                color: $white-color;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/*======== Pricing Plan item end here =========*/
+
+/*======== Gift Sectin start here =========*/
+.event-gift-section {
+    background: url(../../images/index-14/event/01.png);
+    background-size: cover;
+
+    .row {
+
+        @include breakpoint(lg) {
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: row-reverse;
+
+        }
+    }
+
+    .section-header {
+        text-align: left;
+        @extend %ml-0;
+
+        h2 {
+            &:after {
+                left: 20%;
+            }
+        }
+    }
+
+    .gift-content {
+        p {
+            font-size: 16px;
+            line-height: 1.875;
+            text-align: left;
+        }
+
+        .gift-list {
+            .gift-item {
+                list-style: none;
+                color: $white-color;
+                font-size: 16px;
+                padding: 7px 0;
+                font-family: $arvo;
+                text-align: left;
+
+                span {
+                    color: $theme-color;
+                    @extend %mr-10;
+                }
+            }
+        }
+
+        .register-button {
+            @extend %mt-30;
+
+            @include breakpoint(max-lg) {
+                margin-bottom: 30px;
+            }
+        }
+    }
+}
+
+/*======== Gift Sectin end here =========*/
+
+/*======== News section start here =========*/
+.news-item {
+    .news-inner {
+        box-shadow: 0px 0px 20px 0px rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        @extend %hidden;
+
+        .news-thumb {
+            @extend %hidden;
+
+            img {
+                transition: .3s all linear;
+                @extend %w-100;
+            }
+        }
+
+        .news-content {
+            @extend %p-30;
+            border-bottom: 5px solid $theme-color;
+
+            h6 {
+                a {
+                    color: $white-color;
+                    line-height: 1.5;
+                    transition: .2s all linear;
+                    @extend %text-clamp-2;
+                }
+
+                @extend %mb-20;
+            }
+
+            p {
+                font-size: 16px;
+                @extend %mb-15;
+            }
+        }
+    }
+
+    &:hover {
+        .news-thumb {
+            img {
+                transform: scale(1.08) rotate(-4deg);
+            }
+        }
+
+        .news-content {
+            h6 {
+                a {
+                    color: $theme-color;
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+}
+
+.news-section {
+    .section-wrapper {
+        .row {
+            @extend %flex;
+            @extend %justify-center;
+            row-gap: 30px;
+        }
+    }
+}
+
+/*======== News section end here =========*/

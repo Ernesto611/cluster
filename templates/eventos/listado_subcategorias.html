@@ -1,0 +1,256 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Subcategorías de Eventos{% endblock title %}
+
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" />
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Eventos" title="Listado de Subcategorías de Eventos" %}
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" id="activityList">
+                        <div class="card-header border-0">
+                            <div class="row align-items-center gy-3">
+                                <div class="col-sm">
+                                    <h5 class="card-title mb-0">Listado de Subcategorías</h5>
+                                </div>
+                                <div class="col-sm-auto">
+                                    <div class="d-flex gap-1 flex-wrap">
+                                        {% if user.tipo_usuario == 'super_administrador' or 'agregar' in permisos %}
+                                        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSubcategoriaModal">
+                                            <i class="ri-add-line align-bottom me-1"></i> Nueva Subcategoría
+                                        </a>  
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body border border-dashed border-end-0 border-start-0">
+                            <form method="get" class="row g-3 mb-3">
+                                <div class="d-flex flex-wrap align-items-end gap-3">
+                                    <div class="flex-grow-1">
+                                        <div class="search-box">
+                                            <input type="text" name="q" class="form-control" placeholder="Buscar por nombre..." value="{{ q|default_if_none:'' }}">
+                                            <i class="ri-search-line search-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="text-muted">Categoría: </span>
+                                            <select name="categoria" class="form-control mb-0" data-choices data-choices-search-false>
+                                                <option value="">Todas</option>
+                                                {% for c in categorias %}
+                                                    <option value="{{ c.idCategoria }}" {% if categoria_id == c.idCategoria|stringformat:"s" %}selected{% endif %}>{{ c.aNombre }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <button type="submit" class="btn btn-primary w-100"><i class="ri-filter-line"></i></button>
+                                    </div>
+                                </div>    
+                            </form>
+                        </div>
+
+                        <div class="card-body pt-0">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div id="table-counter" class="text-muted small" aria-live="polite">
+                                    Mostrando 0–0 de 0 registros
+                                </div>
+                            </div>
+                            <br>
+                            <div class="table-responsive table-card mb-1">
+                                <table class="table table-nowrap align-middle">
+                                    <thead class="text-muted table-light">
+                                        <tr class="text-uppercase fs-13">
+                                            <th class="sort" data-sort="type_name">Nombre</th>
+                                            <th class="sort" data-sort="category_name">Categoría</th>
+                                            <th class="sort" data-sort="status">Estado</th>
+                                            <th>Opciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for s in subcategorias %}
+                                        <tr>
+                                            <td>{{ s.aNombre }}</td>
+                                            <td>{{ s.categoria.aNombre }}</td>
+                                            <td>
+                                                {% if s.lActivo %}
+                                                <span class="badge bg-success text-uppercase">Activo</span>
+                                                {% else %}
+                                                <span class="badge bg-danger text-uppercase">Inactivo</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <ul class="list-inline hstack gap-2 mb-0">
+                                                    {% if user.tipo_usuario == 'super_administrador' or 'editar' in permisos %}
+                                                    <li class="list-inline-item edit" data-bs-toggle="tooltip" title="Editar">
+                                                        <button class="btn btn-link text-primary p-0 edit-btn" style="text-decoration: none;" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#editSubcategoriaModal" 
+                                                                data-id="{{ s.id }}" 
+                                                                data-nombre="{{ s.aNombre }}"
+                                                                data-categoria="{{ s.categoria.idCategoria }}">
+                                                            <i class="ri-edit-box-line fs-16"></i>
+                                                        </button>
+                                                    </li> 
+                                                    {% endif %}
+                                                    {% if user.tipo_usuario == 'super_administrador' or 'desactivar' in permisos %}
+                                                    <li class="list-inline-item" data-bs-toggle="tooltip" title="{% if s.lActivo %}Desactivar{% else %}Activar{% endif %}">
+                                                        <form action="{% url 'alternar_estado_subcategoria_evento' s.id %}" method="POST">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-link p-0 text-warning" style="text-decoration: none;">
+                                                                <i class="{% if s.lActivo %}ri-toggle-fill{% else %}ri-toggle-line{% endif %} fs-16"></i>
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                    {% endif %}
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="4" class="text-center">No hay subcategorías registradas.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addSubcategoriaModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{% url 'agregar_subcategoria_evento' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Agregar Subcategoría</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label>Nombre</label>
+                            <input type="text" name="aNombre" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Categoría</label>
+                            <select name="categoria" class="form-control" required>
+                                {% for c in categorias %}
+                                <option value="{{ c.idCategoria }}">{{ c.aNombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editSubcategoriaModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" id="editSubcategoriaForm">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Editar Subcategoría</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="id" id="editSubcategoriaId">
+                        <div class="mb-3">
+                            <label>Nombre</label>
+                            <input type="text" name="aNombre" id="editSubcategoriaNombre" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Categoría</label>
+                            <select name="categoria" id="editSubcategoriaCategoria" class="form-control" required>
+                                {% for c in categorias %}
+                                <option value="{{ c.idCategoria }}">{{ c.aNombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const editModal = document.getElementById('editSubcategoriaModal');
+        const form = document.getElementById('editSubcategoriaForm');
+
+        editModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-id');
+            const nombre = button.getAttribute('data-nombre');
+            const categoria = button.getAttribute('data-categoria');
+            form.action = "{% url 'editar_subcategoria_evento' 0 %}".replace('0', id);
+            form.querySelector('#editSubcategoriaId').value = id;
+            form.querySelector('#editSubcategoriaNombre').value = nombre;
+            form.querySelector('#editSubcategoriaCategoria').value = categoria;
+        });
+    });</script>
+<script>
+    var options = {
+        valueNames: ['type_name', 'category_name', 'status'],
+        page: 10,
+        pagination: true
+    };
+
+    var activityList = new List('activityList', options);
+
+    function renderCounter(list) {
+        const el = document.getElementById('table-counter');
+        if (!el) return;
+
+        const total = list.matchingItems ? list.matchingItems.length : list.size();
+
+        let start = 0, end = 0;
+        if (total > 0) {
+
+            start = list.i;
+            end = list.i + list.visibleItems.length - 1;
+        }
+
+        const sufijo = (total === 1) ? 'registro' : 'registros';
+        el.textContent = `Mostrando ${start}–${end} de ${total} ${sufijo}`;
+    }
+
+    function togglePaginationControls() {
+        const paginationContainer = document.querySelector('.pagination-wrap');
+        const totalItems = activityList.matchingItems ? activityList.matchingItems.length : activityList.size();
+        const itemsPerPage = activityList.page;
+
+        if (totalItems <= itemsPerPage) {
+            paginationContainer.style.display = 'none';
+        } else {
+            paginationContainer.style.display = 'flex';
+        }
+    }
+
+    renderCounter(activityList);
+    togglePaginationControls();
+
+    activityList.on('updated', function (list) {
+        renderCounter(list);
+        togglePaginationControls();
+    });</script>
+{% endblock %}

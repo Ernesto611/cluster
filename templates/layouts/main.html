@@ -1,0 +1,16 @@
+{% load static %}
+<!doctype html>
+<html lang="en" data-layout="semibox" data-sidebar-visibility="show" data-topbar="light" data-sidebar="light" data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable">
+    <head>
+        {% block title-meta %}
+        <title>{% block title %}Default Title{% endblock %}</title>
+        {% endblock %}
+        {% include 'layouts/head-css.html' %}
+    </head>
+    <body>
+        {% block content %}
+        
+        {% endblock %}
+        {% include 'layouts/vendor-scripts.html' %}
+    </body>
+</html>

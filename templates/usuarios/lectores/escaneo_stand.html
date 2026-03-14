@@ -1,0 +1,79 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Escanear Visita a Stand{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Stands" title="Escaneo de Visita a Stand" %}
+            {% endblock pagetitle %}
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Seleccionar Stand</h5>
+                        </div>
+                        <div class="card-body">
+                            <select id="stand_id" class="form-control">
+                                {% for stand in stands %}
+                                    <option value="{{ stand.idStand }}">{{ stand.aNombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Escanear Código QR</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div id="reader" style="width: 100%;"></div>
+                            <p id="qr-result" class="mt-3 text-center fw-bold"></p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger text-center" id="error-message" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div> 
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        function onScanSuccess(qrCodeMessage) {
+            let standId = document.getElementById("stand_id").value;
+
+            fetch("{% url 'escaneo_stand' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({
+                    "stand_id": standId,
+                    "qr_data": qrCodeMessage
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                }
+            })
+            .catch(error => {
+                console.error("Error en el fetch:", error);
+                window.location.href = "/usuarios/qr_no_valido/stand/";
+            });
+        }
+
+        let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
+    });</script>
+
+{% endblock %}

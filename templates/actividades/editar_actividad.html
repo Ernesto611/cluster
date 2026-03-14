@@ -1,0 +1,386 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Editar Actividad{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'libs/dropzone/dist/dropzone.css' %}" rel="stylesheet" type="text/css" />
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Actividades" title="Editar Actividad" %}
+            {% endblock pagetitle %}
+
+            <div class="alert alert-danger" role="alert" {% if not form.errors %}style="display: none;"{% endif %}>
+                <strong>Errores:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field }}: {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <form method="POST" id="edit-activity-form" autocomplete="off">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Información</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre de la Actividad</label>
+                                    {{ form.aNombre }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Descripción</label>
+                                    {{ form.aDescripcion }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Evento</label>
+                                    {{ form.idEvento }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Tipo de Actividad</label>
+                                    {{ form.idTipo }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Ubicación</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check form-switch">
+                                    <label class="form-check-label" for="same-location-checkbox">¿La actividad se realiza en la misma ubicación del evento?</label>
+                                    {{ form.lMismaDireccion }}
+                                </div>
+                                <br>
+
+                                <div id="location-fields" {% if form.instance.lMismaDireccion %}style="display: none;"{% endif %}>
+                                    <label class="form-label">¿Deseas usar una dirección guardada?</label>
+                                    <select class="form-control mb-3" id="direccion-guardada-select">
+                                        <option value="">-- Selecciona una dirección guardada --</option>
+                                        {% for direccion in direcciones_guardadas %}
+                                            <option value="{{ direccion.id }}"
+                                                data-calle="{{ direccion.dCalle }}"
+                                                data-numero="{{ direccion.dNumero }}"
+                                                data-colonia="{{ direccion.dColonia }}"
+                                                data-ciudad="{{ direccion.dCiudad }}"
+                                                data-estado="{{ direccion.dEstado }}"
+                                                data-cp="{{ direccion.dCP }}"
+                                                data-latitud="{{ direccion.dLatitud }}"
+                                                data-longitud="{{ direccion.dLongitud }}">
+                                                {{ direccion.dCalle }} {{ direccion.dNumero }}, {{ direccion.dColonia }}, {{ direccion.dCiudad }}, {{ direccion.dEstado }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+
+                                    <div class="text-center my-2 text-muted">O ingresar una nueva dirección</div>
+
+                                    <label class="form-label">Dirección</label>
+                                    {% with d=form.instance %}
+                                    <input type="text" class="form-control" id="activity-full-address-input" name="dDireccion"
+                                        value="{% if d.dDireccion %}{{ d.dDireccion }}{% else %}{{ d.dCalle }} {{ d.dNumero }}, {{ d.dColonia }}, {{ d.dCiudad }}, {{ d.dEstado }}, {{ d.dCP }}{% endif %}"
+                                        placeholder="Escribe la dirección" onblur="getCoordinates()">
+                                    {% endwith %}
+
+                                    {% with d=form.instance %}
+                                    <div id="address-details"
+                                        {% if d.dDireccion or d.dCalle or d.dNumero or d.dColonia or d.dCiudad or d.dEstado or d.dCP or d.dLatitud or d.dLongitud %}
+                                        style="display:block;"
+                                        {% else %}
+                                        style="display:none;"
+                                        {% endif %}>
+                                    {% endwith %}
+                                        <h6 class="mt-3">Dirección Detallada</h6>
+                                        <p class="text-muted" style="font-size: 0.9rem;">
+                                            Revisa que todos los datos estén llenos y correctos. Si algún campo está vacío o incorrecto, corrígelo manualmente.
+                                        </p>
+
+                                        <div class="row mt-3">
+                                            <div class="col-lg-6">
+                                                <label class="form-label">Calle</label>
+                                                {{ form.dCalle }}
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label class="form-label">Número</label>
+                                                {{ form.dNumero }}
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-lg-6">
+                                                <label class="form-label">Colonia</label>
+                                                {{ form.dColonia }}
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label class="form-label">Código Postal</label>
+                                                {{ form.dCP }}
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Ciudad</label>
+                                            {{ form.dCiudad }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Estado</label>
+                                            {{ form.dEstado }}
+                                        </div>
+                                    </div>
+
+                                    <div id="checkbox-nueva-direccion" style="display: none;">
+                                        <div class="form-check mt-3">
+                                            <input class="form-check-input" type="checkbox" value="1" id="guardar-direccion" name="guardar_direccion">
+                                            <label class="form-check-label" for="guardar-direccion">
+                                                Guardar esta dirección para uso futuro
+                                            </label>
+                                        </div>
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="checkbox" value="1" id="direccion-privada" name="direccion_privada" checked>
+                                            <label class="form-check-label" for="direccion-privada">
+                                                Dirección privada (solo tú puedes verla)
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div id="map" style="height: 300px; width: 100%;"></div>
+
+                                    <div class="row mt-3">
+                                        <div class="col-lg-6">
+                                            <label class="form-label">Latitud</label>
+                                            {{ form.dLatitud }}
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <label class="form-label">Longitud</label>
+                                            {{ form.dLongitud }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>   
+
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Detalles</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label" for="activity-cost-input">Costo</label>
+                                    {{ form.nCosto }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="activity-capacity-input">Capacidad</label>
+                                    {{ form.nCapacidad }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="activity-start-date-input">Fecha y Hora de Inicio</label>
+                                    {{ form.fFechaHoraInicio }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="activity-end-date-input">Fecha y Hora de Fin</label>
+                                    {{ form.fFechaHoraFin }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Opciones</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check form-switch">
+                                    <label class="form-check-label">¿Permite Acompañantes?</label>
+                                    {{ form.lAcompañantes }}
+                                </div>
+                                <br>
+                                <div class="mb-3">
+                                    <label class="form-label">Cantidad Máxima de Acompañantes</label>
+                                    {{ form.nAcompañantes }}
+                                </div>
+                                <div class="form-check form-switch">
+                                    <label class="form-check-label">¿Actividad Activa?</label>
+                                    {{ form.lActivo }}
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+
+                    <div class="text-end mb-3">
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'libs/dropzone/dist/dropzone-min.js' %}"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'js/maps.js' %}"></script>
+
+<script>
+
+function parseNum(val, fallback) {
+  if (val === undefined || val === null || val === "") return fallback;
+  const n = Number(String(val).replace(",", "."));
+  return isNaN(n) ? fallback : n;
+}
+
+function showAddressUI() {
+  const details = document.getElementById('address-details');
+  const saver   = document.getElementById('checkbox-nueva-direccion');
+  if (details) details.style.display = 'block';
+  if (saver)   saver.style.display   = 'block';
+  if (window.map && map.invalidateSize) setTimeout(() => map.invalidateSize(), 100);
+}
+
+function fillOnlyMissing(props) {
+  const ids = { street:'id_dCalle', housenumber:'id_dNumero', district:'id_dColonia', city:'id_dCiudad', state:'id_dEstado', postcode:'id_dCP' };
+  for (const [k, id] of Object.entries(ids)) {
+    const el = document.getElementById(id);
+    if (el && !el.value && props[k]) el.value = props[k];
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  const sameLocationCheckbox =
+    document.getElementById("same-location-checkbox") ||
+    document.getElementById("id_lMismaDireccion") ||
+    document.querySelector('input[name="lMismaDireccion"]');
+
+  const locationFields = document.getElementById("location-fields");
+  function toggleLocationFields() {
+    if (sameLocationCheckbox && sameLocationCheckbox.checked) {
+      if (locationFields) locationFields.style.display = "none";
+    } else {
+      if (locationFields) locationFields.style.display = "block";
+      if (window.map && map.invalidateSize) setTimeout(() => map.invalidateSize(), 300);
+    }
+  }
+  if (sameLocationCheckbox) sameLocationCheckbox.addEventListener("change", toggleLocationFields);
+  toggleLocationFields();
+});
+
+const initialLat = parseNum("{{ form.instance.dLatitud|default_if_none:''|escapejs }}", 19.701809);
+const initialLng = parseNum("{{ form.instance.dLongitud|default_if_none:''|escapejs }}", -101.196245);
+
+const map = L.map('map').setView([initialLat, initialLng], 13);
+addTiles(map);
+
+const marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+
+marker.on('dragend', function() {
+  const p = marker.getLatLng();
+  const latInput = document.getElementById('id_dLatitud');
+  const lngInput = document.getElementById('id_dLongitud');
+
+  showAddressUI();
+  if (latInput) latInput.value = p.lat.toFixed(6);
+  if (lngInput) lngInput.value = p.lng.toFixed(6);
+
+  reverseGeocode(p.lat, p.lng)
+    .then(props => fillOnlyMissing(props))
+    .catch(() => {});
+});
+
+const ADDRESS_MAPPING = {
+  calle:  'id_dCalle',
+  numero: 'id_dNumero',
+  colonia:'id_dColonia',
+  ciudad: 'id_dCiudad',
+  estado: 'id_dEstado',
+  cp:     'id_dCP'
+};
+
+async function getCoordinates() {
+  const input = document.getElementById('activity-full-address-input');
+  const address = input ? input.value.trim() : '';
+  if (!address) return;
+
+  const latEl = document.getElementById('id_dLatitud');
+  const lonEl = document.getElementById('id_dLongitud');
+
+  try {
+
+    const { lat, lon, props } = await geocodeAddress(address, { lat: 23.6345, lon: -102.5528 });
+
+    showAddressUI();
+
+    const nlat = Number(lat), nlon = Number(lon);
+    if (latEl) latEl.value = nlat.toFixed(6);
+    if (lonEl) lonEl.value = nlon.toFixed(6);
+    marker.setLatLng([nlat, nlon]);
+    map.setView([nlat, nlon], 13);
+
+    if (props) fillAddressInputs(props, ADDRESS_MAPPING);
+
+    const needsMore =
+      !props || (!props.city && !props.postcode) ||
+      !document.getElementById('id_dCiudad').value ||
+      !document.getElementById('id_dCP').value;
+
+    if (needsMore) {
+      reverseGeocode(nlat, nlon)
+        .then(p => fillOnlyMissing(p))
+        .catch(() => {});
+    }
+  } catch (e) {
+    showAddressUI();
+    alert("No se pudo encontrar la ubicación. Ingresa la dirección manualmente.");
+  }
+}
+
+document.getElementById('direccion-guardada-select')?.addEventListener('change', function () {
+  const s = this.options[this.selectedIndex];
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+
+  if (s && s.value) {
+    setVal('id_dCalle',   s.dataset.calle);
+    setVal('id_dNumero',  s.dataset.numero);
+    setVal('id_dColonia', s.dataset.colonia);
+    setVal('id_dCiudad',  s.dataset.ciudad);
+    setVal('id_dEstado',  s.dataset.estado);
+    setVal('id_dCP',      s.dataset.cp);
+
+    const latNum = parseNum(s.dataset.latitud, initialLat);
+    const lngNum = parseNum(s.dataset.longitud, initialLng);
+    setVal('id_dLatitud',  isNaN(latNum) ? '' : latNum.toFixed(6));
+    setVal('id_dLongitud', isNaN(lngNum) ? '' : lngNum.toFixed(6));
+
+    document.getElementById('address-details').style.display = 'block';
+    document.getElementById('checkbox-nueva-direccion').style.display = 'none';
+
+    if (!isNaN(latNum) && !isNaN(lngNum)) {
+      marker.setLatLng([latNum, lngNum]);
+      map.setView([latNum, lngNum], 13);
+      setTimeout(() => map.invalidateSize(), 300);
+    }
+  } else {
+    document.getElementById('checkbox-nueva-direccion').style.display = 'none';
+  }
+});
+
+['id_dCalle','id_dCiudad','id_dEstado','id_dCP'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', () => {
+    const sel = document.getElementById('direccion-guardada-select');
+    if (!sel || !sel.value) {
+      document.getElementById('checkbox-nueva-direccion').style.display = 'block';
+    }
+  });
+});</script>
+{% endblock %}

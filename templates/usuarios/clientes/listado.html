@@ -1,0 +1,144 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Clientes{% endblock title %}
+
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Clientes" title="Listado" %}
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" id="clienteList">
+                        <div class="card-header border-0">
+                            <div class="row align-items-center gy-3">
+                                <div class="col-sm">
+                                    <h5 class="card-title mb-0">Listado de Clientes</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body border border-dashed border-end-0 border-start-0">
+                            <form method="get" class="row g-3 mb-3">
+                                <div class="d-flex flex-wrap align-items-end gap-3">
+                                    <div class="flex-grow-1">
+                                        <div class="search-box">
+                                            <input type="text" name="q" class="form-control" placeholder="Buscar por nombre, apellido, correo, empresa o RFC..." value="{{ q|default_if_none:'' }}">
+                                            <i class="ri-search-line search-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <button type="submit" class="btn btn-primary w-100"><i class="ri-filter-line"></i></button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <br>
+
+                        <div class="card-body pt-0">
+                            <div>
+                                <div class="table-responsive table-card mb-1">
+                                    <table class="table table-nowrap align-middle" id="orderTable">
+                                        <thead class="text-muted table-light">
+                                            <tr class="text-uppercase fs-13">
+                                                <th class="sort" data-sort="name">Nombre</th>
+                                                <th class="sort" data-sort="lastname">Apellido/s</th>
+                                                <th class="sort" data-sort="email">Correo</th>
+                                                <th class="sort" data-sort="empresa">Empresa</th>
+                                                <th class="sort" data-sort="rfc">RFC</th>
+                                                <th>Eventos asistidos</th>
+                                                <th>Actividades asistidas</th>
+                                                <th>Stands visitados</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="list">
+                                            {% for cliente in clientes %}
+                                            <tr>
+                                                <td class="name">{{ cliente.aNombre }}</td>
+                                                <td class="lastname">{{ cliente.aApellido }}</td>
+                                                <td class="email">{{ cliente.email }}</td>
+                                                <td class="empresa">{{ cliente.aEmpresa|default:"-" }}</td>
+                                                <td class="rfc">{{ cliente.aRFC|default:"-" }}</td>
+                                                <td>{{ cliente.eventos_asistidos }}</td>
+                                                <td>{{ cliente.actividades_asistidas }}</td>
+                                                <td>{{ cliente.stands_visitados }}</td>
+                                            </tr>
+                                            {% empty %}
+                                                {% if q %}
+                                                <script>
+                                                    document.addEventListener('DOMContentLoaded', function () {
+                                                        document.querySelector('.noresult').style.display = 'block';
+                                                    });
+</script>
+                                                {% else %}
+                                                <tr>
+                                                    <td colspan="8" class="text-center">No hay clientes disponibles.</td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                    <div class="noresult" style="display: none">
+                                        <div class="text-center">
+                                            <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:75px;height:75px"></lord-icon>
+                                            <h5 class="mt-2">¡No encontramos ningún resultado!</h5>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end">
+                                    <div class="pagination-wrap hstack gap-2">
+                                        <a class="page-item pagination-prev disabled" href="#">
+                                            Anterior
+                                        </a>
+                                        <ul class="pagination listjs-pagination mb-0"></ul>
+                                        <a class="page-item pagination-next" href="#">
+                                            Siguiente
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include "partials/footer.html" %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'libs/list.js/dist/list.min.js'%}"></script>
+<script src="{% static 'libs/list.pagination.js/dist/list.pagination.min.js'%}"></script>
+
+<script>
+    var options = {
+        valueNames: ['name', 'lastname', 'email', 'empresa', 'rfc'],
+        page: 10,
+        pagination: true
+    };
+
+    var clienteList = new List('clienteList', options);
+
+    function togglePaginationControls() {
+        const paginationContainer = document.querySelector('.pagination-wrap');
+        const totalItems = clienteList.size();
+        const itemsPerPage = clienteList.page;
+
+        if (totalItems <= itemsPerPage) {
+            paginationContainer.style.display = 'none';
+        } else {
+            paginationContainer.style.display = 'flex';
+        }
+    }
+
+    togglePaginationControls();
+    clienteList.on('updated', togglePaginationControls);</script>
+{% endblock %}

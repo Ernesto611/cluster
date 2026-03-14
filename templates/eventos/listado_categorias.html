@@ -1,0 +1,342 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Categorias de Eventos{% endblock title %}
+
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Eventos" title="Listado de Categorias de Eventos" %}
+            {% endblock pagetitle %}
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" id="activityList">
+                        <div class="card-header border-0">
+                            <div class="row align-items-center gy-3">
+                                <div class="col-sm">
+                                    <h5 class="card-title mb-0">Listado de Categorias de Eventos</h5>
+                                </div>
+                                <div class="col-sm-auto">
+                                    <div class="d-flex gap-1 flex-wrap">
+                                        {% if user.tipo_usuario == 'super_administrador' or 'agregar' in permisos %}
+                                        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCategoriaModal">
+                                            <i class="ri-add-line align-bottom me-1"></i> Nuevo Categoria
+                                        </a>  
+                                        {% endif %}                                      
+                                        <button class="btn btn-soft-danger" id="eliminar-multiple" onClick="deleteMultiple()">
+                                            <i class="ri-delete-bin-line"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body border border-dashed border-end-0 border-start-0">
+                            <form method="get" class="row g-3 mb-3">
+                                <div class="d-flex flex-wrap align-items-end gap-3">
+                                    <div class="flex-grow-1">
+                                        <div class="search-box">
+                                            <input type="text" name="q" class="form-control" placeholder="Buscar por nombre..." value="{{ q|default_if_none:'' }}">
+                                            <i class="ri-search-line search-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <button type="submit" class="btn btn-primary w-100"><i class="ri-filter-line"></i></button>
+                                    </div>
+                                </div>    
+                            </form>
+                        </div>
+                        <br>
+                        <div class="card-body pt-0">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div id="table-counter" class="text-muted small" aria-live="polite">
+                                        Mostrando 0–0 de 0 registros
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="table-responsive table-card mb-1">
+                                    <table class="table table-nowrap align-middle" id="orderTable">
+                                        <thead class="text-muted table-light">
+                                            <tr class="text-uppercase fs-13">
+                                                <th scope="col" style="width: 25px;">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="checkAll" value="option">
+                                                    </div>
+                                                </th>
+                                                <th class="sort" data-sort="type_name">Nombre</th>
+                                                <th class="sort" data-sort="status">Estado</th>
+                                                <th>Opciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="list form-check-all">
+                                            {% for categoria in categorias_eventos %}
+                                            <tr>
+                                                <th scope="row">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="checkAll" value="{{ categoria.idCategoria }}">
+                                                    </div>
+                                                </th>
+                                                <td class="type_name">{{ categoria.aNombre }}</td>
+                                                <td class="status">
+                                                    {% if categoria.lActivo %}
+                                                    <span class="badge bg-success text-uppercase">Activo</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger text-uppercase">Inactivo</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <ul class="list-inline hstack gap-2 mb-0">
+                                                        
+                                                        {% if user.tipo_usuario == 'super_administrador' or 'editar' in permisos %}
+                                                        <li class="list-inline-item edit" data-bs-toggle="tooltip" title="Editar">
+                                                            <button class="btn btn-link text-primary p-0 edit-btn" style="text-decoration: none;" 
+                                                                    data-bs-toggle="modal" 
+                                                                    data-bs-target="#editCategoriaModal" 
+                                                                    data-id="{{ categoria.idCategoria }}" 
+                                                                    data-nombre="{{ categoria.aNombre }}">
+                                                                <i class="ri-edit-box-line fs-16"></i>
+                                                            </button>
+                                                        </li> 
+                                                        {% endif %}                                                       
+                                                        
+                                                        {% if user.tipo_usuario == 'super_administrador' or 'desactivar' in permisos %} 
+                                                        <li class="list-inline-item" data-bs-toggle="tooltip" title="{% if categoria.lActivo %}Desactivar{% else %}Activar{% endif %}">
+                                                            <form action="{% url 'alternar_estado_categoria_evento' categoria.idCategoria %}" method="POST" class="toggle-form d-inline">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-link p-0 text-warning" style="text-decoration: none;">
+                                                                    <i class="{% if categoria.lActivo %}ri-toggle-fill{% else %}ri-toggle-line{% endif %} fs-16"></i>
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        {% endif %}
+                                                        <li class="list-inline-item" data-bs-toggle="tooltip" title="Configurar estilos">
+                                                        {% if user.tipo_usuario == 'super_administrador' or 'editar_estilos' in permisos %}
+                                                            <a class="btn btn-link text-info p-0" style="text-decoration:none;"
+                                                            href="{% url 'configurar_estilos_categoria' categoria.idCategoria %}">
+                                                            <i class="ri-paint-brush-line fs-16"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                        </li>
+
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                                {% if q %}
+                                                <script>
+                                                    document.addEventListener('DOMContentLoaded', function () {
+                                                        document.querySelector('.noresult').style.display = 'block';
+                                                    });
+</script>
+                                                {% else %}
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No hay categorias de eventos registrados.</td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <div class="noresult" style="display: none">
+                                        <div class="text-center">
+                                            <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:75px;height:75px"></lord-icon>
+                                            <h5 class="mt-2">¡No encontramos ningún resultado!</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <div class="pagination-wrap hstack gap-2">
+                                        <a class="page-item pagination-prev disabled" href="#">
+                                            Anterior
+                                        </a>
+                                        <ul class="pagination listjs-pagination mb-0"></ul>
+                                        <a class="page-item pagination-next" href="#">
+                                            Siguiente
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% block footer %}
+    {% include "partials/footer.html" %}
+    {% endblock footer %}
+</div>
+
+<div class="modal fade" id="addCategoriaModal" tabindex="-1" aria-labelledby="addCategoriaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCategoriaModalLabel">Agregar Nuevo Categoria de Evento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'agregar_categoria_evento' %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="categoriaNombre" class="form-label">Nombre del Categoria</label>
+                        <input type="text" class="form-control" id="categoriaNombre" name="aNombre" placeholder="Ingrese el nombre del categoria de evento" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editCategoriaModal" tabindex="-1" aria-labelledby="editCategoriaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCategoriaModalLabel">Editar Categoria de Evento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'editar_categoria_evento' 0 %}" method="POST" id="editCategoriaForm">
+                {% csrf_token %}
+                <input type="hidden" id="editCategoriaId" name="idCategoria">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editCategoriaNombre" class="form-label">Nombre del Categoria</label>
+                        <input type="text" class="form-control" id="editCategoriaNombre" name="aNombre" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'libs/list.js/dist/list.min.js'%}"></script>
+<script src="{% static 'libs/list.pagination.js/dist/list.pagination.min.js'%}"></script>
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'error',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                const form = this.closest('.delete-form');
+
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: 'Esta acción eliminará el categoria de evento y no se puede deshacer.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, eliminarlo',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const editModal = document.getElementById('editCategoriaModal');
+        const editForm = document.getElementById('editCategoriaForm');
+        const editCategoriaIdInput = document.getElementById('editCategoriaId');
+        const editCategoriaNombreInput = document.getElementById('editCategoriaNombre');
+
+        editModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const idCategoria = button.getAttribute('data-id');
+            const nombre = button.getAttribute('data-nombre');
+            editCategoriaIdInput.value = idCategoria;
+            editCategoriaNombreInput.value = nombre;
+            editForm.action = `{% url 'editar_categoria_evento' 0 %}`.replace('0', idCategoria);
+        });
+    });</script>
+<script>
+    var options = {
+        valueNames: ['type_name', 'status'],
+        page: 10,
+        pagination: true
+    };
+
+    var activityList = new List('activityList', options);
+
+    function renderCounter(list) {
+        const el = document.getElementById('table-counter');
+        if (!el) return;
+
+        const total = list.matchingItems ? list.matchingItems.length : list.size();
+
+        let start = 0, end = 0;
+        if (total > 0) {
+
+            start = list.i;
+            end = list.i + list.visibleItems.length - 1;
+        }
+
+        const sufijo = (total === 1) ? 'registro' : 'registros';
+        el.textContent = `Mostrando ${start}–${end} de ${total} ${sufijo}`;
+    }
+
+    function togglePaginationControls() {
+        const paginationContainer = document.querySelector('.pagination-wrap');
+        const totalItems = activityList.matchingItems ? activityList.matchingItems.length : activityList.size();
+        const itemsPerPage = activityList.page;
+
+        if (totalItems <= itemsPerPage) {
+            paginationContainer.style.display = 'none';
+        } else {
+            paginationContainer.style.display = 'flex';
+        }
+    }
+
+    renderCounter(activityList);
+    togglePaginationControls();
+
+    activityList.on('updated', function (list) {
+        renderCounter(list);
+        togglePaginationControls();
+    });</script>
+{% endblock %}

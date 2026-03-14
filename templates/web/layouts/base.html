@@ -1,0 +1,414 @@
+{% load static %}
+{% load pwa %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% progressive_web_app_meta %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}{% endblock title %} | CLUSTERTIM</title>
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i%7CPoppins:300,400,500,600,700"
+        rel="stylesheet">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/logo.svg' %}" />
+    <link href="{% static 'web/assets/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'web/assets/css/font-awesome.min.css' %}" rel="stylesheet">
+    <link href="{% static 'web/assets/flaticon/flaticon.css' %}" rel="stylesheet">
+    <link href="{% static 'web/assets/css/swiper.min.css' %}" rel="stylesheet">
+    <link href="{% static 'web/assets/css/lightcase.css' %}" rel="stylesheet">
+    <link href="{% static 'web/assets/css/quick-view.css' %}" rel="stylesheet">
+    <link href="{% static 'web/assets/css/jquery.nstSlider.css' %}" rel="stylesheet">
+    <link href="{% static 'web/assets/css/flexslider.css' %}" rel="stylesheet">
+    <link href="{% static 'web/assets/css/banner-bg.css' %}" rel="stylesheet">
+    <link href="{% static 'web/assets/css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'web/assets/css/header.css' %}" rel="stylesheet">
+    <link href="{% static 'web/assets/css/responsive.css' %}" rel="stylesheet">
+    
+    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'images/icons/icon-120x120.png' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'images/icons/icon-152x152.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/icons/icon-180x180.png' %}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="CLUSTERTIM">
+    <style>
+        .pwa-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pwa-modal-content {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 360px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            font-family: sans-serif;
+        }
+
+        .pwa-logo {
+            height: 60px;
+            margin-bottom: 1rem;
+        }
+
+        .pwa-title {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .pwa-text {
+            margin: 1rem 0;
+            color: #333;
+        }
+
+        .pwa-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .pwa-install {
+            flex: 1;
+            background: #2d72fc;
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .pwa-later {
+            flex: 1;
+            background: transparent;
+            color: #2d72fc;
+            border: 1px solid #2d72fc;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+    
+    <link rel="stylesheet" href="{% static 'css/chatbox.css' %}">
+    {% block extra_css %}
+    {% endblock extra_css %}
+</head>
+<body>
+    <div class="box-layout">
+        {% block header %}
+        {% include "web/layouts/topbar.html" %}
+        {% endblock header %}
+        {% block content %}
+        {% block footer %}
+        {% endblock footer %}
+        {% endblock content %}
+         
+        <div id="chatbox-container">
+            
+            <div id="chat-toggle" class="chat-toggle">
+                <svg class="chat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <svg class="close-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </div>
+
+            <div id="chat-window" class="chat-window hidden">
+                
+                <div class="chat-header">
+                    <div class="chat-header-info">
+                        <div class="avatar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3>{{ site_name|default:"Asistente Virtual" }}</h3>
+                            <span class="status">En línea</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chat-messages" class="chat-messages">
+                    <div class="message bot-message">
+                        <div class="message-content">
+                            ¡Hola! 👋 ¿En qué puedo ayudarte hoy?
+                        </div>
+                        <div class="message-time">Ahora</div>
+                    </div>
+                </div>
+
+                <div id="quick-questions" class="quick-questions">
+                    {% for faq in faqs|default:"" %}
+                    <div class="quick-question-item" data-question="{{ faq.question }}">
+                        {{ faq.icon }} {{ faq.title }}
+                    </div>
+                    {% empty %}
+                    <div class="quick-question-item" data-question="¿Cuáles son los próximos eventos?">
+                        📅 Próximos eventos
+                    </div>
+
+                    <div class="quick-question-item" data-question="¿Cuál es el próximo desayuno?">
+                        🥐 Próximo desayuno
+                    </div>
+
+                    <div class="quick-question-item" data-question="¿Cuál es el próximo curso?">
+                        📘 Próximo curso
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="chat-input-wrapper">
+                        <input 
+                            type="text" 
+                            id="chat-input" 
+                            placeholder="Escribe tu mensaje..."
+                            maxlength="500"
+                        >
+                        <button id="voice-btn" class="voice-btn" title="Nota de voz">
+                            <svg class="voice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                            <svg class="recording-icon hidden" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="12" cy="12" r="10"/>
+                            </svg>
+                        </button>
+                        <button id="send-btn" class="send-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22,2 15,22 11,13 2,9 22,2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'web/assets/js/jquery-3.1.1.min.js' %}"></script>
+    <script src="{% static 'web/assets/js/jquery-migrate-1.4.1.min.js' %}"></script>
+    <script src="{% static 'web/assets/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'web/assets/js/jquery.countdown.min.js' %}"></script>
+    <script src="{% static 'web/assets/js/swiper.jquery.min.js' %}"></script>
+    <script src="{% static 'web/assets/js/masonry.pkgd.min.js' %}"></script>
+    <script src="{% static 'web/assets/js/lightcase.js' %}"></script>
+    <script src="{% static 'web/assets/js/modernizr.js' %}"></script>
+    <script src="{% static 'web/assets/js/velocity.min.js' %}"></script>
+    <script src="{% static 'web/assets/js/quick-view.js' %}"></script>
+    <script src="{% static 'web/assets/js/jquery.nstSlider.js' %}"></script>
+    <script src="{% static 'web/assets/js/nstfunctions.js' %}"></script>
+    <script src="{% static 'web/assets/js/flexslider-min.js' %}"></script>
+    <script src="{% static 'web/assets/js/flexfunctions.js' %}"></script>
+    <script src="{% static 'web/assets/js/directional-hover.js' %}"></script>
+    <script src="{% static 'web/assets/js/jquery.easing.min.js' %}"></script>
+    <script src="{% static 'web/assets/js/parallax.js' %}"></script>
+    <script src="{% static 'web/assets/js/theia-sticky-sidebar.js' %}"></script>
+    <script src="{% static 'web/assets/js/custom.js' %}"></script>
+    
+    <script src="{% static 'js/chatbox.js' %}"></script>
+    {% block extra_js %}
+    {% if request.user.is_authenticated and request.user.configuracion_exportacion.activar_exportacion %}
+    <script>
+        const minutos = {{ request.user.configuracion_exportacion.intervalo_minutos }};
+        const exportarEventos = {{ request.user.configuracion_exportacion.exportar_eventos|yesno:"true,false" }};
+        const exportarActividades = {{ request.user.configuracion_exportacion.exportar_actividades|yesno:"true,false" }};
+        const exportarStands = {{ request.user.configuracion_exportacion.exportar_stands|yesno:"true,false" }};
+
+        const ultimaClave = 'ultima_exportacion';
+        const ahora = () => new Date().getTime();
+
+        function puedeExportar(tipo) {
+            const data = JSON.parse(localStorage.getItem(ultimaClave) || '{}');
+            const ultimo = data[tipo] || 0;
+            return (ahora() - ultimo) >= minutos * 60 * 1000;
+        }
+
+        function registrarExportacion(tipo) {
+            const data = JSON.parse(localStorage.getItem(ultimaClave) || '{}');
+            data[tipo] = ahora();
+            localStorage.setItem(ultimaClave, JSON.stringify(data));
+        }
+
+        function triggerDownload(url, tipo) {
+            if (!puedeExportar(tipo)) return;
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = url;
+            document.body.appendChild(iframe);
+            setTimeout(() => iframe.remove(), 10000);
+            registrarExportacion(tipo);
+        }
+
+        setInterval(() => {
+            if (exportarEventos) triggerDownload("{% url 'descargar_excel_eventos' %}", 'eventos');
+            if (exportarActividades) triggerDownload("{% url 'descargar_excel_actividades' %}", 'actividades');
+            if (exportarStands) triggerDownload("{% url 'descargar_excel_stands' %}", 'stands');
+        }, minutos * 60000);
+</script>
+    {% endif %}
+    {% endblock extra_js %}
+    
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                             document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+
+            if (csrfToken) {
+                window.CSRF_TOKEN = csrfToken;
+            }
+
+            window.chatboxInstance = new Chatbox();
+
+            window.sendMessageToDjango = async function(message, audioBlob = null) {
+                try {
+                    const formData = new FormData();
+                    formData.append('message', message);
+
+                    if (audioBlob) {
+                        formData.append('audio', audioBlob, 'voice_message.wav');
+                    }
+
+                    function getCookie(name) {
+                        let cookieValue = null;
+                        if (document.cookie && document.cookie !== '') {
+                            const cookies = document.cookie.split(';');
+                            for (let i = 0; i < cookies.length; i++) {
+                                const cookie = cookies[i].trim();
+                                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+                    const csrfToken = getCookie('csrftoken');
+                    if (csrfToken) {
+                        formData.append('csrfmiddlewaretoken', csrfToken);
+                    }
+
+                    const response = await fetch("{% url 'chat_message' %}", {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': csrfToken
+                        },
+                        credentials: 'same-origin'
+                    });
+
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error enviando mensaje:', error);
+                    return { error: 'Error de conexión' };
+                }
+            };
+        });
+</script>
+    {% block scripts %}
+    {% endblock scripts %}
+    <div id="pwaModal" style="display: none;" class="pwa-modal-overlay">
+        <div class="pwa-modal-content">
+            <img src="/static/images/logo.png" alt="Logo" class="pwa-logo">
+            <h2 class="pwa-title">CLUSTERTIM</h2>
+            <p class="pwa-text">Instala CLUSTERTIM en tu dispositivo y accede como cualquier aplicación.</p>
+
+            <div class="pwa-buttons" id="pwaAndroidActions">
+            <button id="pwaInstallBtn" class="pwa-install">INSTALAR</button>
+            <button id="pwaLaterBtn" class="pwa-later">TALVEZ DESPUÉS</button>
+            </div>
+
+            <div id="pwaIosInstructions" style="display: none;">
+            <p class="pwa-text" style="font-size: 0.95rem;">
+                En Safari, toca el ícono de <strong>compartir</strong> (<span style="font-size: 1.2rem;">🔗</span>) y selecciona<br>
+                <strong>"Agregar a pantalla de inicio"</strong>.
+            </p>
+            <button id="pwaLaterBtnIOS" class="pwa-later">TALVEZ DESPUÉS</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        let deferredPrompt;
+        const modal = document.getElementById('pwaModal');
+        const installBtn = document.getElementById('pwaInstallBtn');
+        const laterBtn = document.getElementById('pwaLaterBtn');
+        const iosLaterBtn = document.getElementById('pwaLaterBtnIOS');
+        const androidActions = document.getElementById('pwaAndroidActions');
+        const iosInstructions = document.getElementById('pwaIosInstructions');
+
+        function isIos() {
+            return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+        }
+
+        function isInStandaloneMode() {
+            return ('standalone' in window.navigator) && window.navigator.standalone;
+        }
+
+        function shouldShowModal() {
+            const lastDismiss = localStorage.getItem('pwaModalDismissedAt');
+            if (!lastDismiss) return true;
+            const dismissedDate = new Date(parseInt(lastDismiss));
+            const now = new Date();
+            const diffHours = (now - dismissedDate) / (1000 * 60 * 60);
+            return diffHours > 24;
+        }
+
+        if (isIos() && !isInStandaloneMode() && shouldShowModal()) {
+            androidActions.style.display = 'none';
+            iosInstructions.style.display = 'block';
+            modal.style.display = 'flex';
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            if (!isIos() && shouldShowModal()) {
+            androidActions.style.display = 'flex';
+            iosInstructions.style.display = 'none';
+            modal.style.display = 'flex';
+            }
+        });
+
+        if (installBtn) {
+            installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                console.log("App instalada");
+                }
+                modal.style.display = 'none';
+                deferredPrompt = null;
+            }
+            });
+        }
+
+        const dismiss = () => {
+            modal.style.display = 'none';
+            localStorage.setItem('pwaModalDismissedAt', Date.now().toString());
+        };
+
+        if (laterBtn) laterBtn.addEventListener('click', dismiss);
+        if (iosLaterBtn) iosLaterBtn.addEventListener('click', dismiss);
+</script>
+</body>
+</html>

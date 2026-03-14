@@ -1,0 +1,60 @@
+{% extends "web/layouts/base.html" %}
+{% load static %}
+{% block title %}Editar Acompañantes{% endblock title %}
+{% block content %}
+
+    <br><br><br>
+    <section class="page-header">
+        <div class="container">
+            <div class="content">
+                <h4>Editar Acompañantes</h4>
+            </div>
+        </div>
+    </section>
+
+    <section class="shop-cart padding-120">
+        <div class="container">
+            <div class="shop-table table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="title">Actividad</th>
+                            <th>Evento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="product-thumbnail">
+                                <div class="content">
+                                    <h4>{{ actividad.aNombre }}</h4>
+                                </div>
+                            </td>
+                            <td>{{ actividad.idEvento.aNombre }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-xs-12">
+                    <div class="shipping">
+                        <h4>Ingresa los nombres de tus acompañantes</h4>
+                        <form method="post">
+                            {% csrf_token %}
+                            {% for nombre in acompañantes %}
+                                <input type="text" name="acompañantes" value="{{ nombre }}" 
+                                placeholder="Nombre del acompañante {{ forloop.counter }}" 
+                                style="background-color: white !important; color: black !important; border: 1px solid #ccc !important; padding: 8px; font-size: 16px; width: auto; min-width: 150px; max-width: 250px; display: inline-block; margin-right: 10px;">
+                            {% endfor %}
+                            <input type="submit" name="submit" value="Guardar cambios">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% block footer %}
+        {% include "web/layouts/footer.html" %}
+    {% endblock footer %}
+{% endblock content %}

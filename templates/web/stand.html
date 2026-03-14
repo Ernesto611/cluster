@@ -1,0 +1,274 @@
+{% extends "web/layouts/base.html" %}
+{% load static %}
+{% block title %}Stand{% endblock title %}
+{% block content %}
+    <br><br><br>
+    <section class="page-header">
+        <div class="container">
+            <div class="content">
+                <h4>{{ stand.idUsuario.aNombre }} detalles</h4>
+                <ul></ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="speaker-details padding-120">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-12 col-xs-12">
+                    <div class="speaker-image">
+                        <img src="{{ stand.aImagen.url }}" alt="speaker image" class="img-responsive">
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 col-xs-12">
+                    <div class="speaker-content">
+                        <h4>{{ stand.aNombre }}</h4>
+                        <p>{{ stand.aDescripcion }}
+                        </p>
+                        {% if patrocinador %}
+                        <ul class="speaker-social">
+                            {% if patrocinador.aFacebook %}
+                                <li><a href="{{ patrocinador.aFacebook }}"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+                            {% endif %}
+                            {% if patrocinador.aTwitter %}
+                                <li><a href="{{ patrocinador.aTwitter }}"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+                            {% endif %}
+                            {% if patrocinador.aInstagram %}
+                            <li><a href="{{ patrocinador.aInstagram }}"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+                            {% endif %}
+                        </ul>
+                        <ul class="speaker-address">
+                            <li><span><i class="fa fa-phone" aria-hidden="true"></i></span>{{ patrocinador.aTelefono }}</li>
+                            <li><span><i class="fa fa-envelope-o" aria-hidden="true"></i></span>{{ patrocinador.idUsuario.email }}</li>
+                            {% if patrocinador.aSitioWeb %}
+                            <li><span><i class="fa fa-globe" aria-hidden="true"></i></span>{{ patrocinador.aSitioWeb }}</li>
+                            {% endif %}
+                        </ul>
+                        {% endif %}
+                        {% if archivos_stand %}
+                        <div class="text-center mt-4">
+                            <button class="btn btn-outline-info" data-toggle="modal" data-target="#descargasStandModal">
+                                Descargables
+                            </button>
+                        </div>
+
+                        <div class="modal fade" id="descargasStandModal" tabindex="-1" role="dialog" aria-labelledby="descargasStandModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                <h5 class="modal-title" id="descargasStandModalLabel">Archivos Descargables</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                </div>
+                                <div class="modal-body">
+                                {% if archivos_stand %}
+                                    <ul class="list-group">
+                                        {% for archivo in archivos_stand %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                ({{ archivo.extension }}) {{ archivo.titulo }}
+                                                <a href="{{ archivo.archivo.url }}" download class="btn btn-sm btn-primary">Descargar</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p>No hay archivos disponibles para este stand.</p>
+                                {% endif %}
+                                </div>
+                            </div>
+                            </div>
+                        </div>  
+                        {% endif %}
+                        {% if stand.representante %}
+                            {% if user.is_authenticated %}
+                                {% if not cita_activa %}
+                                    {% if horarios_disponibles %}
+                                        <div class="text-center mt-4">
+                                            <button class="btn btn-primary" data-toggle="modal" data-target="#citaModal">
+                                                Solicitar Cita
+                                            </button>
+                                        </div>
+
+                                        <div class="modal fade" id="citaModal" tabindex="-1" role="dialog" aria-labelledby="citaModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <form method="POST" id="formCitaStand">
+                                                    {% csrf_token %}
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="citaModalLabel">Solicitar Cita con {{ stand.representante.aNombre }}</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="form-group">
+                                                                <label for="fechaHora">Selecciona un horario disponible</label>
+                                                                <select name="fechaHora" class="form-control" required>
+                                                                    {% for horario in horarios_disponibles %}
+                                                                        <option value="{{ horario.fFechaHora|date:'Y-m-d\\TH:i' }}">
+                                                                            {{ horario.fFechaHora|date:"d/m/Y H:i" }}
+                                                                        </option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                            {% if stand.nCostoCita > 0 %}
+                                                            <div class="alert alert-info mt-3">
+                                                                Esta cita tiene un costo de <strong>${{ stand.nCostoCita }}</strong>. El pago se solicitará si tu cita es aceptada.
+                                                            </div>
+                                                            {% endif %}
+                                                            <div class="form-group">
+                                                                <label for="mensaje">Mensaje</label>
+                                                                <textarea class="form-control" name="mensaje" rows="3"></textarea>
+                                                            </div>
+                                                            <input type="hidden" name="idStand" value="{{ stand.idStand }}">
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="submit" class="btn btn-success">Enviar Solicitud</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-warning text-center mt-4">
+                                            Este stand no tiene horarios disponibles para citas actualmente.
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                <div class="alert alert-info text-center mt-4">
+                                    Ya tienes una cita activa para este stand ({{ cita_activa.get_aStatus_display }}).
+                                    {% if cita_activa.aStatus == "aceptada" and pago_pendiente and stand.nCostoCita > 0 %}
+                                        <br><strong>Debes realizar el pago de ${{ stand.nCostoCita }}.</strong>
+                                        <form method="POST" action="{% url 'pago_cita' cita_activa.idCita %}" class="mt-2">
+                                            {% csrf_token %}
+                                            <select name="metodo_pago" class="form-control mb-2" required>
+                                                <option value="">Selecciona método de pago</option>
+                                                <option value="paypal">PayPal</option>
+                                                <option value="stripe">Tarjeta (Stripe)</option>
+                                                <option value="openpay">OpenPay</option>
+                                                {% if stand.lPagoPresencialPermitido %}
+                                                <option value="presencial">Pago al momento de la cita</option>
+                                                {% endif %}
+                                            </select>
+                                            <button type="submit" class="btn btn-success">Pagar ahora</button>
+                                        </form>
+                                    {% endif %}
+                                </div>                                
+                                {% endif %}
+                            {% else %}
+                                <p class="text-center text-muted mt-4">Debes <a href="{% url 'login' %}">iniciar sesión</a> para solicitar una cita.</p>
+                            {% endif %}
+                        {% endif %}                    
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% if productos %}
+    <section class="page-header">
+        <div class="container">
+            <div class="content">
+                <h4>Productos</h4>
+                <ul></ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="product padding-120">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-9 col-md-12 col-xs-12 sticky-widget">
+                    <div class="product-header">
+                        <p class="pull-left">
+                            Mostrando
+                            <span>
+                                {% if productos.has_other_pages %}
+                                    {{ productos.start_index }} - {{ productos.end_index }}
+                                {% else %}
+                                    {{ productos.paginator.count }}
+                                {% endif %}
+                            </span>
+                            de {{ productos.paginator.count }} productos
+                        </p>
+                        <div class="icon hidden-xs"></div>
+                    </div>
+                    
+                    <div class="product-items">
+                        {% for producto in productos %}
+                        <div class="product-item-grid">
+                            <div class="pro-item">
+                                <div class="pro-image">
+                                    <img src="{{ producto.aImagen.url }}" alt="{{ producto.aNombre }}" class="img-responsive">
+                                </div>
+                                <div class="pro-content">
+                                    <h4>{{ producto.aNombre }}</h4>
+                                    <span>${{ producto.nPrecio }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p>No hay productos disponibles.</p>
+                        {% endfor %}
+                    </div>
+
+                    {% if productos.paginator.num_pages > 1 %}
+                        <ul class="pagination">
+                            {% if productos.has_previous %}
+                                <li><a href="?page=1"><i class="fa fa-angle-double-left" aria-hidden="true"></i></a></li>
+                                <li><a href="?page={{ productos.previous_page_number }}"><i class="fa fa-angle-left" aria-hidden="true"></i></a></li>
+                            {% endif %}
+
+                            <li><a href="#">Página {{ productos.number }} de {{ productos.paginator.num_pages }}</a></li>
+
+                            {% if productos.has_next %}
+                                <li><a href="?page={{ productos.next_page_number }}"><i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+                                <li><a href="?page={{ productos.paginator.num_pages }}"><i class="fa fa-angle-double-right" aria-hidden="true"></i></a></li>
+                            {% endif %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    {% block footer %}
+        {% include "web/layouts/footer.html" %}
+    {% endblock footer %}
+    
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.getElementById('formCitaStand').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch("{% url 'solicitar_cita' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    $('#citaModal').modal('hide');
+                    setTimeout(() => {
+                        alert(data.mensaje);
+                        location.reload();
+                    }, 300);
+                } else {
+                    alert("Hubo un error al solicitar la cita.");
+                }
+            });
+        });
+</script>
+        
+{% endblock content %}

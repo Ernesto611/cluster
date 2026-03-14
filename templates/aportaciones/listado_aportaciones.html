@@ -1,0 +1,289 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Aportaciones{% endblock title %}
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Aportaciones" title="Listado" %}
+            {% endblock pagetitle %}
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" id="contributionList">
+                        <div class="card-header border-0">
+                            <div class="row align-items-center gy-3">
+                                <div class="col-sm">
+                                    <h5 class="card-title mb-0">Listado de Aportaciones</h5>
+                                </div>
+                                <div class="col-sm-auto">
+                                    <div class="d-flex gap-1 flex-wrap">
+                                        {% if user.tipo_usuario == 'super_administrador' or 'agregar' in permisos %}
+                                        <a href="{% url 'agregar_aportacion' %}" class="btn btn-success">
+                                            <i class="ri-add-line align-bottom me-1"></i> Nueva Aportación
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body border border-dashed border-end-0 border-start-0">
+                            <form method="get" class="row g-3 mb-3">
+                                <div class="d-flex flex-wrap align-items-end gap-3">
+                                    <div class="flex-grow-1">
+                                        <div class="search-box">
+                                            <input type="text" name="q" class="form-control search" placeholder="Buscar por nombre o descripción..." value="{{ q|default_if_none:'' }}">
+                                            <i class="ri-search-line search-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <button type="submit" class="btn btn-primary w-100"><i class="ri-filter-line"></i></button>
+                                    </div>
+                                </div>    
+                            </form>
+                        </div>
+                        <div class="card-body pt-0">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div id="table-counter" class="text-muted small" aria-live="polite">
+                                        Mostrando 0–0 de 0 registros
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="table-responsive table-card mb-1">
+                                    <table class="table table-nowrap align-middle" id="orderTable">
+                                        <thead class="text-muted table-light">
+                                            <tr class="text-uppercase fs-13">
+                                                <th class="sort" data-sort="nombre">Nombre</th>
+                                                <th class="sort" data-sort="descripcion">Descripción</th>
+                                                <th class="sort" data-sort="aportador">Aportador</th>
+                                                <th class="sort" data-sort="evento">Evento</th>
+                                                <th class="sort" data-sort="monto">Monto</th>
+                                                <th class="sort" data-sort="estado">Estado</th>
+                                                <th class="sort" data-sort="fecha_pago">Fecha de Pago</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="list form-check-all">
+                                            {% for aportacion in aportaciones %}
+                                            <tr>
+                                                <td class="nombre">{{ aportacion.aNombre }}</td>
+                                                <td class="descripcion">{{ aportacion.aDescripcion|truncatechars:50 }}</td>
+                                                <td class="aportador">{{ aportacion.idAportador.aNombre }}</td>
+                                                <td class="evento">{{ aportacion.idEvento.aNombre }}</td>
+                                                <td class="monto">${{ aportacion.monto_pago }}</td>
+                                                <td class="estado">
+                                                    {% if aportacion.eEstado == 'pagada' %}
+                                                    <span class="badge bg-success text-uppercase">Pagada</span>
+                                                    {% else %}
+                                                    <span class="badge bg-warning text-uppercase">Pendiente</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="fecha_pago">
+                                                    {% if aportacion.fPago %}
+                                                    {{ aportacion.fPago|date:"d M, Y" }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <ul class="list-inline hstack gap-2 mb-0">
+                                                        <li class="list-inline-item" data-bs-toggle="tooltip" title="Copiar enlace de pago">
+                                                            <a href="#" class="text-info d-inline-block" onclick="copiarEnlacePago('{{ aportacion.idAportacion }}')">
+                                                                <i class="ri-link fs-16"></i>
+                                                            </a>
+                                                        </li>
+                                                        {% if user.tipo_usuario == 'super_administrador' or 'editar' in permisos %}
+                                                        <li class="list-inline-item edit" data-bs-toggle="tooltip" title="Editar">
+                                                            <a href="{% url 'editar_aportacion' aportacion.idAportacion %}" class="text-primary d-inline-block edit-item-btn">
+                                                                <i class="ri-edit-box-line fs-16"></i>
+                                                            </a>
+                                                        </li>
+                                                        {% endif %}
+                                                        {% if user.tipo_usuario == 'super_administrador' or 'editar' in permisos %}
+                                                        {% if aportacion.eEstado == 'pendiente' and aportacion.metodo_pago == 'efectivo' %}
+                                                        <li class="list-inline-item" data-bs-toggle="tooltip" title="Marcar como pagada">
+                                                            <a href="#" class="text-success d-inline-block" onclick="marcarComoPagada({{ aportacion.idAportacion }})">
+                                                                <i class="ri-checkbox-circle-fill fs-16"></i>
+                                                            </a>
+                                                        </li>
+                                                        {% endif %}
+                                                        {% endif %}
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="9" class="text-center">
+                                                    <div class="noresult" style="display: block;">
+                                                        <div class="text-center">
+                                                            <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:75px;height:75px"></lord-icon>
+                                                            <h5 class="mt-2">No se encontraron resultados</h5>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <div class="d-flex justify-content-end mt-3">
+                                        <div class="pagination-wrap hstack gap-2">
+                                            <a class="page-item pagination-prev disabled" href="#">
+                                                Anterior
+                                            </a>
+                                            <ul class="pagination listjs-pagination mb-0"></ul>
+                                            <a class="page-item pagination-next" href="#">
+                                                Siguiente
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% block footer %}
+    {% include "partials/footer.html" %}
+    {% endblock footer %}
+</div>
+{% endblock content %}
+{% block extra_js %}
+<script src="{% static 'libs/list.js/dist/list.min.js'%}"></script>
+<script src="{% static 'libs/list.pagination.js/dist/list.pagination.min.js'%}"></script>
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'error',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+
+<script>
+    var options = {
+        valueNames: [
+            'nombre',
+            'descripcion',
+            'aportador',
+            'evento',
+            'monto',
+            'estado',
+            'fecha_pago',
+        ],
+        page: 10,
+        pagination: true
+    };
+    var contributionList = new List('contributionList', options);
+
+    function renderCounter(list) {
+        const el = document.getElementById('table-counter');
+        if (!el) return;
+
+        const total = list.matchingItems ? list.matchingItems.length : list.size();
+
+        let start = 0, end = 0;
+        if (total > 0) {
+
+            start = list.i;
+            end = list.i + list.visibleItems.length - 1;
+        }
+
+        const sufijo = (total === 1) ? 'registro' : 'registros';
+        el.textContent = `Mostrando ${start}–${end} de ${total} ${sufijo}`;
+    }
+
+    function togglePaginationControls() {
+        const paginationContainer = document.querySelector('.pagination-wrap');
+        const totalItems = contributionList.matchingItems ? contributionList.matchingItems.length : contributionList.size();
+        const itemsPerPage = contributionList.page;
+
+        if (totalItems <= itemsPerPage) {
+            paginationContainer.style.display = 'none';
+        } else {
+            paginationContainer.style.display = 'flex';
+        }
+    }
+
+    renderCounter(contributionList);
+    togglePaginationControls();
+
+    contributionList.on('updated', function (list) {
+        renderCounter(list);
+        togglePaginationControls();
+    });
+
+    function marcarComoPagada(idAportacion) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: 'La aportación se marcará como pagada',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, marcar como pagada',
+            cancelButtonText: 'Cancelar',
+            confirmButtonClass: 'btn btn-success w-xs me-2 mt-2',
+            cancelButtonClass: 'btn btn-danger w-xs mt-2',
+            buttonsStyling: false,
+            showCloseButton: true
+        }).then(function (result) {
+            if (result.value) {
+                var form = document.createElement('form');
+                form.method = 'post';
+                form.action = '/aportaciones/marcar-como-pagada/' + idAportacion + '/';
+                var csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+
+    function copiarEnlacePago(idAportacion) {
+        const enlace = `https://registroclustertim.com/aportacion/${idAportacion}/pago/`;
+
+        navigator.clipboard.writeText(enlace).then(function() {
+            Swal.fire({
+                icon: 'success',
+                iconColor: '#0ab39c',
+                title: 'Enlace copiado',
+                text: 'El enlace de pago se ha copiado al portapapeles.',
+                showConfirmButton: false,
+                timer: 1500,
+            });
+        }, function(err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo copiar el enlace. Intenta de nuevo.',
+                showConfirmButton: false,
+                timer: 1500,
+            });
+        });
+    }</script>
+{% endblock extra_js %}

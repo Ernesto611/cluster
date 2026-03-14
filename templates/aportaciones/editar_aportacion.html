@@ -1,0 +1,133 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Editar Aportación{% endblock title %}
+
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Aportaciones" title="Editar Aportación" %}
+            {% endblock pagetitle %}
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Editar Aportación</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" class="needs-validation" novalidate>
+                                {% csrf_token %}
+                                <div class="row mb-3">
+                                    <div class="col-lg-6">
+                                        <label for="aNombre" class="form-label">Nombre <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="aNombre" name="aNombre" value="{{ aportacion.aNombre }}" required>
+                                        <div class="invalid-feedback">
+                                            Por favor ingresa un nombre.
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <label for="idEvento" class="form-label">Evento <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="idEvento" name="idEvento" required>
+                                            <option value="">Selecciona un evento</option>
+                                            {% for evento in eventos %}
+                                            <option value="{{ evento.idEvento }}" {% if evento.idEvento == aportacion.idEvento.idEvento %}selected{% endif %}>{{ evento.aNombre }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Por favor selecciona un evento.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-lg-12">
+                                        <label for="aDescripcion" class="form-label">Descripción <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="aDescripcion" name="aDescripcion" rows="4" required>{{ aportacion.aDescripcion }}</textarea>
+                                        <div class="invalid-feedback">
+                                            Por favor ingresa una descripción.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-lg-6">
+                                        <label for="idAportador" class="form-label">Aportador <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="idAportador" name="idAportador" required>
+                                            <option value="">Selecciona un aportador</option>
+                                            {% for aportador in aportadores %}
+                                            <option value="{{ aportador.idAportador }}" {% if aportador.idAportador == aportacion.idAportador.idAportador %}selected{% endif %}>{{ aportador.aNombre }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Por favor selecciona un aportador.
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <label for="monto_pago" class="form-label">Monto <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="monto_pago" name="monto_pago" step="0.01" min="0" value="{{ aportacion.monto_pago }}" required>
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            Por favor ingresa un monto válido.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-lg-6">
+                                        <label class="form-label">Estado</label>
+                                        <div class="form-control bg-light">
+                                            {% if aportacion.eEstado == 'pagada' %}
+                                            <span class="badge bg-success text-uppercase">Pagada</span>
+                                            {% else %}
+                                            <span class="badge bg-warning text-uppercase">Pendiente</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% if aportacion.fPago %}
+                                    <div class="col-lg-6">
+                                        <label class="form-label">Fecha de Pago</label>
+                                        <div class="form-control bg-light">
+                                            {{ aportacion.fPago|date:"d/m/Y H:i" }}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-lg-12">
+                                        <div class="hstack gap-2 justify-content-end">
+                                            <a href="{% url 'listado_aportaciones' %}" class="btn btn-light">Cancelar</a>
+                                            <button type="submit" class="btn btn-success">Guardar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+<script>
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()</script>
+{% endblock extra_js %}

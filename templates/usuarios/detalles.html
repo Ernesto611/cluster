@@ -1,0 +1,57 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Detalles del Usuario{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+                {% include "partials/page-title.html" with pagetitle="Usuarios" title="Detalles del Usuario" %}
+            {% endblock pagetitle %}
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Información General</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Nombre Completo:</strong> {{ usuario_detalle.aNombre }}{% if usuario_detalle.aApellido %} {{ usuario_detalle.aApellido }}{% endif %}</p>
+                            <p><strong>Email:</strong> {{ usuario_detalle.email }}</p>
+                            {% if usuario_detalle.aAnadic %}
+                                <p><strong>Estado ANADIC:</strong> {{ usuario_detalle.aAnadic }}</p>
+                            {% endif %}
+                            {% if usuario_detalle.aRFC %}
+                                <p><strong>RFC:</strong> {{ usuario_detalle.aRFC }}</p>
+                            {% endif %}
+                            {% if usuario_detalle.aEmpresa %}
+                                <p><strong>Empresa:</strong> {{ usuario_detalle.aEmpresa }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card text-center">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Foto de Perfil</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if usuario_detalle.foto_perfil %}
+                                <img src="{{ usuario_detalle.foto_perfil.url }}" class="img-fluid rounded-circle mb-2" style="max-width: 150px;" alt="Foto de perfil">
+                            {% else %}
+                                <img src="{% static 'images/speaker_01.jpg' %}" class="img-fluid rounded-circle mb-2" style="max-width: 150px;" alt="Foto por defecto">
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-end mt-3">
+                    <a href="{% url 'listar_administradores' %}" class="btn btn-secondary">Volver al Listado</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

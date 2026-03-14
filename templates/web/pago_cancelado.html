@@ -1,0 +1,29 @@
+{% extends "web/layouts/base.html" %}
+{% block title %}Pago Cancelado{% endblock %}
+{% block content %}
+<div class="auth-page-wrapper pt-5">
+    <div class="auth-page-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6 col-xl-5">
+                    <div class="card mt-4">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="text-danger">¡Pago Cancelado!</h5>
+                            <p class="text-muted">Tu pago no se completó correctamente.</p>
+                            <p class="text-muted">Si crees que esto es un error, intenta realizar el pago nuevamente.</p>
+                            <div class="mt-4">
+                                {% if ultimo_evento_id %}
+                                    <a href="{% url 'evento_detalles' ultimo_evento_id %}" class="btn btn-secondary w-100">Regresar al Inicio</a>
+                                {% else %}
+                                    <a href="{% url 'index' %}" class="btn btn-secondary w-100">Regresar al Inicio</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

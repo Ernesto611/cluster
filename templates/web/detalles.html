@@ -1,0 +1,90 @@
+{% extends "web/layouts/base.html" %}
+{% load static %}
+{% block title %}Detalles {{ tipo }}{% endblock title %}
+{% block content %}
+
+    <br><br><br>
+    <section class="page-header">
+        <div class="container">
+            <div class="content">
+                <h4>{{ detalles.idUsuario.aNombre }} detalles</h4>
+                <ul></ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="speaker-details padding-120">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-12 col-xs-12">
+                    <div class="speaker-image">
+                        <img src="{{ detalles.aFoto.url }}" alt="speaker image" class="img-responsive">
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 col-xs-12">
+                    <div class="speaker-content">
+                        <h4>{{ detalles.idUsuario.aNombre }} {{ detalles.idUsuario.aApellido }}</h4>
+                        <p>{{ detalles.aBiografia }}
+                        </p>
+                        <ul class="speaker-social">
+                            {% if detalles.aFacebook %}
+                                <li><a href="{{ detalles.aFacebook }}"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+                            {% endif %}
+                            {% if detalles.aTwitter %}
+                                <li><a href="{{ detalles.aTwitter }}"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+                            {% endif %}
+                            {% if detalles.aInstagram %}
+                            <li><a href="{{ detalles.aInstagram }}"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+                            {% endif %}
+                        </ul>
+                        <ul class="speaker-address">
+                            <li><span><i class="fa fa-phone" aria-hidden="true"></i></span>{{ detalles.aTelefono }}</li>
+                            <li><span><i class="fa fa-envelope-o" aria-hidden="true"></i></span>{{ detalles.idUsuario.email }}</li>
+                            {% if detalles.aSitioWeb %}
+                            <li><span><i class="fa fa-globe" aria-hidden="true"></i></span>{{ detalles.aSitioWeb }}</li>
+                            {% endif %}
+                        </ul>
+                        {% if archivos_expositor %}
+                        <div class="text-center mt-4">
+                            <button class="btn btn-outline-info" data-toggle="modal" data-target="#descargasStandModal">
+                                Descargables
+                            </button>
+                        </div>
+
+                        <div class="modal fade" id="descargasStandModal" tabindex="-1" role="dialog" aria-labelledby="descargasStandModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                <h5 class="modal-title" id="descargasStandModalLabel">Archivos Descargables</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                </div>
+                                <div class="modal-body">
+                                {% if archivos_expositor %}
+                                    <ul class="list-group">
+                                        {% for archivo in archivos_expositor %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                ({{ archivo.extension }}) {{ archivo.titulo }}
+                                                <a href="{{ archivo.archivo.url }}" download class="btn btn-sm btn-primary">Descargar</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p>No hay archivos disponibles para este conferencista.</p>
+                                {% endif %}
+                                </div>
+                            </div>
+                            </div>
+                        </div>  
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% block footer %}
+        {% include "web/layouts/footer.html" %}
+    {% endblock footer %}
+{% endblock content %}

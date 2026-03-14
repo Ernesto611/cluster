@@ -1,0 +1,260 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Horarios de Citas{% endblock title %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Citas" title="Gestión de Horarios" %}
+
+            <div class="card">
+                <div class="card-header border-0">
+                    <h5 class="card-title mb-0">Horarios disponibles para citas</h5>
+                </div>
+
+                <div class="card-body">
+                    
+                    <form method="get" class="row mb-4">
+                        <div class="col-md-6">
+                            <label>Selecciona un stand</label>
+                            <select name="stand" class="form-select" onchange="this.form.submit()">
+                                {% for s in stands %}
+                                    <option value="{{ s.idStand }}" {% if stand_actual.idStand == s.idStand %}selected{% endif %}>
+                                        {{ s.aNombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+
+                        <button type="button" class="btn btn-outline-primary"
+                                data-target="#form-recurrente-dias" aria-expanded="false">
+                            <i class="ri-calendar-schedule-line align-bottom me-1"></i>
+                            Citas recurrentes (varios días)
+                        </button>
+                    </div>
+
+                    <div id="form-recurrente-dia" class="d-none border rounded p-3 mb-4">
+                        <form method="post" class="row g-3 align-items-end">
+                            {% csrf_token %}
+                            <input type="hidden" name="crear_recurrente" value="1">
+
+                            <div class="col-md-3">
+                                <label>Inicio</label>
+                                <input type="datetime-local" name="fInicio" class="form-control" step="60" required>
+                                <small class="text-muted">Ej. 2025-09-17 14:00</small>
+                            </div>
+                            <div class="col-md-3">
+                                <label>Fin</label>
+                                <input type="datetime-local" name="fFin" class="form-control" step="60" required>
+                                <small class="text-muted">Ej. 2025-09-17 19:00</small>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Intervalo (min)</label>
+                                <input type="number" name="intervalo_minutos" class="form-control" min="5" step="5" value="30" required>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="ri-time-line align-bottom me-1"></i> Generar
+                                </button>
+                            </div>
+
+                            <div class="col-12">
+                                <small class="text-muted">
+                                    Genera slots en <strong>[Inicio, Fin)</strong> cada X minutos (el último inicia a <em>Fin − Intervalo</em>).
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div id="form-recurrente-dias" class="d-none border rounded p-3 mb-4">
+                        <form method="post" class="row g-3 align-items-end">
+                            {% csrf_token %}
+                            <input type="hidden" name="crear_recurrente_dias" value="1">
+
+                            <div class="col-md-3">
+                                <label>Fecha inicio</label>
+                                <input type="date" name="fecha_inicio" class="form-control" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label>Fecha fin</label>
+                                <input type="date" name="fecha_fin" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label>Hora inicio</label>
+                                <input type="time" name="hora_inicio" class="form-control" step="60" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Hora fin</label>
+                                <input type="time" name="hora_fin" class="form-control" step="60" required>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label>Intervalo (min)</label>
+                                <input type="number" name="intervalo_minutos" class="form-control" min="5" step="5" value="30" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="d-block mb-1">Días de la semana</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="dias" value="0"> <span class="form-check-label">Lun</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="dias" value="1"> <span class="form-check-label">Mar</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="dias" value="2"> <span class="form-check-label">Mié</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="dias" value="3"> <span class="form-check-label">Jue</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="dias" value="4"> <span class="form-check-label">Vie</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="dias" value="5"> <span class="form-check-label">Sáb</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="dias" value="6"> <span class="form-check-label">Dom</span>
+                                    </label>
+                                </div>
+                                <small class="text-muted d-block mt-1">Si no seleccionas ninguno, se aplican <strong>todos los días</strong>.</small>
+                            </div>
+
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="ri-calendar-schedule-line align-bottom me-1"></i> Generar
+                                </button>
+                            </div>
+
+                            <div class="col-12">
+                                <small class="text-muted">
+                                    Por cada día seleccionado dentro del rango, se crean slots en <strong>[Hora inicio, Hora fin)</strong> cada X minutos.
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+
+                    <form method="post" class="row g-3 align-items-end mb-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="nuevo_horario" value="1">
+                        <div class="col-md-6">
+                            <label>Nuevo horario disponible</label>
+                            <input type="datetime-local" name="fFechaHora" class="form-control" required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="ri-add-line align-bottom me-1"></i> Agregar
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive table-card">
+                        <table class="table table-nowrap align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Fecha y hora</th>
+                                    <th>Opciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for horario in horarios %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ horario.fFechaHora|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <form method="post" class="d-inline-block">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="eliminar_horario" value="1">
+                                            <input type="hidden" name="idHorario" value="{{ horario.idHorario }}">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar este horario?');">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No hay horarios registrados para este stand.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'libs/list.js/dist/list.min.js'%}"></script>
+<script src="{% static 'libs/list.pagination.js/dist/list.pagination.min.js'%}"></script>
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: "{{ message }}",
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: "{{ message }}",
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+
+<script>
+(function () {
+  function restoreState(btn) {
+    var key = 'toggle:' + btn.getAttribute('data-target');
+    var state = localStorage.getItem(key);
+    var target = document.querySelector(btn.dataset.target);
+    if (!target) return;
+
+    if (state === 'open') {
+      target.classList.remove('d-none');
+      btn.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  function bindToggle(btn) {
+    btn.addEventListener('click', function () {
+      var target = document.querySelector(btn.dataset.target);
+      if (!target) return;
+
+      var hidden = target.classList.toggle('d-none');
+      btn.setAttribute('aria-expanded', String(!hidden));
+      var key = 'toggle:' + btn.getAttribute('data-target');
+      localStorage.setItem(key, hidden ? 'closed' : 'open');
+    });
+  }
+
+  document.querySelectorAll('button[data-target]').forEach(function (btn) {
+    bindToggle(btn);
+    restoreState(btn);
+  });
+})();</script>
+{% endblock extra_js %}

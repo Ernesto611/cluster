@@ -1,0 +1,137 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Editar Stand{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+
+            {% include "partials/page-title.html" with pagetitle="Stands" title="Editar Stand" %}
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data" autocomplete="off">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header"><h5 class="card-title mb-0">Información del Stand</h5></div>
+                            <div class="card-body">
+
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre</label>
+                                    {{ form.aNombre }}
+                                    {% for error in form.aNombre.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Apellido/s</label>
+                                    {{ form.aApellido }}
+                                    {% for error in form.aApellido.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Número de Stand</label>
+                                    {{ form.nNumeroStand }}
+                                    {% for error in form.nNumeroStand.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Evento</label>
+                                    {{ form.idEvento }}
+                                    {% for error in form.idEvento.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Descripción</label>
+                                    {{ form.aDescripcion }}
+                                    {% for error in form.aDescripcion.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Costo por cita (MXN)</label>
+                                    {{ form.nCostoCita }}
+                                    {% for error in form.nCostoCita.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                                    <div class="form-text">Si deseas que las citas sean gratuitas, deja este valor en 0.</div>
+                                </div>
+                                
+                                <div class="mb-3" id="pago-presencial-wrapper" style="display: none;">
+                                    <div class="form-check">
+                                        {{ form.lPagoPresencialPermitido }}
+                                        <label class="form-check-label" for="{{ form.lPagoPresencialPermitido.id_for_label }}">
+                                            ¿Permitir pago presencial?
+                                        </label>
+                                    </div>
+                                </div>                                
+
+                                <div class="mb-3">
+                                    <label class="form-label">Imagen</label>
+                                    {{ form.aImagen }}
+                                    {% for error in form.aImagen.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+
+                                    {% if stand.aImagen %}
+                                        <div class="mt-2">
+                                            <img src="{{ stand.aImagen.url }}" alt="Imagen actual" class="img-thumbnail" style="max-height: 150px;">
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        {% if request.user.tipo_usuario != "patrocinador" and request.user.tipo_usuario != "stand" %}
+                        <div class="card">
+                            <div class="card-header"><h5 class="card-title mb-0">Representante del Stand</h5></div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Seleccionar representante</label>
+                                    {{ form.representante_existente }}
+                                    {% for error in form.representante_existente.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                        </div>
+                        {% endif %}
+
+                        <div class="text-end mb-3">
+                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                            <a href="{% url 'listado_stands' %}" class="btn btn-secondary">Cancelar</a>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const costoInput = document.getElementById("id_nCostoCita");
+        const pagoPresencialWrapper = document.getElementById("pago-presencial-wrapper");
+
+        function togglePagoPresencial() {
+            const value = parseFloat(costoInput.value) || 0;
+            pagoPresencialWrapper.style.display = value > 0 ? "block" : "none";
+        }
+
+        costoInput.addEventListener("input", togglePagoPresencial);
+        togglePagoPresencial();
+    });</script>
+
+{% endblock %}

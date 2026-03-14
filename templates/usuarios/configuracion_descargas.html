@@ -1,0 +1,90 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Configuración de Exportación{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Exportación" title="Configuración automática" %}
+
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                <script>
+                    Swal.fire({
+                        icon: 'success',
+                        iconColor: '#0ab39c',
+                        title: "{{ message }}",
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
+</script>
+                {% elif message.tags == 'error' %}
+                <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: "{{ message }}",
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
+</script>
+                {% endif %}
+            {% endfor %}
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Configuración de Descargas Automáticas</h5>
+                            </div>
+                            <div class="card-body">
+
+                                <div class="mb-3">
+                                    <label class="form-label">Activar descargas automáticas</label>
+                                    {{ form.activar_exportacion }}
+                                    {% for error in form.activar_exportacion.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Intervalo en minutos</label>
+                                    {{ form.intervalo_minutos }}
+                                    {% for error in form.intervalo_minutos.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Tipos de registros a descargar</label>
+                                    <div class="form-check">
+                                        {{ form.exportar_eventos }} <label class="form-check-label ms-1">Eventos</label>
+                                    </div>
+                                    <div class="form-check">
+                                        {{ form.exportar_actividades }} <label class="form-check-label ms-1">Actividades</label>
+                                    </div>
+                                    <div class="form-check">
+                                        {{ form.exportar_stands }} <label class="form-check-label ms-1">Stands</label>
+                                    </div>
+                                    {% if form.exportar_eventos.errors or form.exportar_actividades.errors or form.exportar_stands.errors %}
+                                        <div class="text-danger">Revisa los tipos de registros seleccionados.</div>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="text-end mb-3">
+                            <button type="submit" class="btn btn-primary">Guardar configuración</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Entrada Confirmada{% endblock %}
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Eventos" title="Entrada Confirmada" %}
+            {% endblock pagetitle %}
+
+            <div style="margin: 0; padding: 0; background-color: #eeeeee;" bgcolor="#eeeeee">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td align="center" bgcolor="#eeeeee">
+                            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;">
+                                <tr>
+                                    <td align="center" style="font-size:0; padding: 35px;" bgcolor="green">
+                                        <h1 style="font-size: 36px; font-weight: 800; color: #ffffff;">Entrada Confirmada</h1>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" bgcolor="#ffffff" style="padding: 35px;">
+                                        <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;">
+                                            <tr>
+                                                <td align="center">
+                                                    <img src="https://img.icons8.com/carbon-copy/100/000000/checked-checkbox.png" width="125" height="120" /><br>
+                                                    <h2 style="font-size: 30px; font-weight: 800; color: #333333;">
+                                                        ¡Registro válido!
+                                                    </h2>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="left" bgcolor="#eeeeee" style="padding: 10px; font-weight: 800;">
+                                                    Detalles:
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="left" style="padding: 10px;">
+                                                    <b>Evento:</b> {{ evento.aNombre }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="left" style="padding: 10px;">
+                                                    <b>Titular:</b> {{ usuario.aNombre }} {{ usuario.aApellido }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="center" style="padding: 35px;">
+                                                    <a href="{% url 'escaneo_evento' %}" style="font-size: 18px; color: #ffffff; background-color: #5CAEFF; padding: 15px 30px; text-decoration: none; border-radius: 5px;">
+                                                        Escanear otro
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="center" style="padding: 35px; color: #777777;">
+                                                    © 2025 EVENTOS ANADICMX. Todos los derechos reservados.
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div> 
+</div>
+
+{% endblock %}

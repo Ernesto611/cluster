@@ -1,0 +1,73 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Detalles de Cita{% endblock title %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% include "partials/page-title.html" with pagetitle="Citas" title="Detalles de la cita" %}
+
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="mb-4">Información de la Cita</h5>
+                            <ul class="list-group mb-4">
+                                <li class="list-group-item"><strong>Nombre:</strong> {{ cita.idUsuario.aNombre }} {{ cita.idUsuario.aApellido }}</li>
+                                <li class="list-group-item"><strong>Correo:</strong> {{ cita.idUsuario.email }}</li>
+                                <li class="list-group-item"><strong>Stand:</strong> {{ cita.idStand.aNombre }}</li>
+                                <li class="list-group-item"><strong>Fecha y hora:</strong> {{ cita.fFechaHora|date:"d/m/Y H:i" }}</li>
+                                <li class="list-group-item"><strong>Mensaje:</strong><br>{{ cita.aMensaje|default:"-" }}</li>
+                                <li class="list-group-item">
+                                    <strong>Estado actual:</strong> 
+                                    {% if cita.aStatus == 'pendiente' %}
+                                        <span class="badge bg-warning text-uppercase">{{ cita.get_aStatus_display }}</span>
+                                    {% elif cita.aStatus == 'aceptada' or cita.aStatus == 'completada' %}
+                                        <span class="badge bg-success text-uppercase">{{ cita.get_aStatus_display }}</span>
+                                    {% elif cita.aStatus == 'rechazada' or cita.aStatus == 'cancelada' %}
+                                        <span class="badge bg-danger text-uppercase">{{ cita.get_aStatus_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary text-uppercase">{{ cita.get_aStatus_display }}</span>
+                                    {% endif %}
+                                </li>
+                            </ul>
+
+                            {% if cita.aStatus != "completada" %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label">Cambiar estado</label>
+                                    <select name="status" class="form-select">
+                                        {% for value, label in cita.STATUS_CHOICES %}
+                                            {% if value != "pendiente" and value != "completada" %}
+                                                <option value="{{ value }}" {% if cita.aStatus == value %}selected{% endif %}>
+                                                    {{ label }}
+                                                </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Notas</label>
+                                    <textarea name="nota" class="form-control" rows="6">{{ cita.aNotas|default_if_none:'' }}</textarea>
+                                </div>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                </div>
+                            </form>
+                            {% else %}
+                                <div class="alert alert-info">Esta cita ya ha sido marcada como <strong>completada</strong> y no puede modificarse.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% block footer %}
+    {% include "partials/footer.html" %}
+    {% endblock footer %}
+</div>
+{% endblock content %}

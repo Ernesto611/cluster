@@ -1,0 +1,214 @@
+{% extends "web/layouts/base.html" %}
+{% load static %}
+{% block title %}Pago{% endblock title %}
+{% block content %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+<style>
+.metodo-opcion {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.3s;
+}
+.metodo-opcion:hover {
+    border-color: #ccc;
+}
+.metodo-opcion.border-primary {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 2px rgba(13,110,253,.25);
+}
+</style>
+
+<br><br><br>
+<section class="page-header">
+    <div class="container">
+        <div class="content">
+            <h4>Pago de Entrada</h4>
+        </div>
+    </div>
+</section>
+
+<section class="shop-cart padding-120">
+    <div class="container">
+        <div class="shop-table table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="title">Entrada</th>
+                        <th>Evento</th>
+                        <th>Cantidad</th>
+                        <th>Precio</th>
+                        <th class="remove-cart">Eliminar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="product-thumbnail">
+                            <div class="content">
+                                <h4>{{ entrada.aNombre }}</h4>
+                            </div>
+                        </td>
+                        <td>
+                            {% if entrada.lMultiple %}
+                                <form method="post" id="form-cantidad">
+                                    {% csrf_token %}
+                                    <input type="number" name="cantidad" id="cantidad-entrada" class="form-control" value="{{ cantidad|default:1 }}" min="1" max="{{ entrada.nCantidad }}" required onchange="document.getElementById('form-cantidad').submit();">
+                                    <input type="hidden" name="cupon" value="{{ cupon_aplicado.aCodigo|default:'' }}">
+                                </form>
+                            {% else %}
+                                <input type="hidden" name="cantidad" value="1">
+                                <span>1</span>
+                            {% endif %}
+                        </td>
+                        <td><span>${{ entrada.nCosto|floatformat:2 }}</span></td>
+                        <td class="remove-cart">
+                            {% if ultimo_evento_id %}
+                                <a href="{% url 'evento_detalles' ultimo_evento_id %}"><i class="fa fa-times" aria-hidden="true"></i></a>
+                            {% else %}
+                                <a href="{% url 'index' %}"><i class="fa fa-times" aria-hidden="true"></i></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <form method="post" class="mb-4">
+        {% csrf_token %}
+            <div class="mb-3">
+                <label>Cupón de Descuento</label>
+                <div class="input-group">
+                    <input type="text" name="cupon" class="form-control" placeholder="Ingresa tu código" value="{{ cupon_aplicado.aCodigo|default:'' }}" id="cupon-input">
+                    <input type="hidden" name="cantidad" value="{{ cantidad|default:1 }}">
+                    <button type="submit" class="btn btn-outline-primary">Validar</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-xs-12">
+                {% if monto_final > 0 %}
+                <div class="shipping">
+                    <h4>Selecciona tu método de pago</h4>
+                    <form method="post" onsubmit="return validarPago();">
+                        {% csrf_token %}
+                        <input type="hidden" name="cupon" value="{{ cupon_aplicado.aCodigo|default:'' }}">
+                        <input type="hidden" name="metodo_pago" id="metodo_pago" required>
+                        <input type="hidden" name="cantidad" value="{{ cantidad|default:1 }}">
+
+                        <div class="row">
+                            {% for metodo in metodos_pago %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card metodo-opcion h-100" onclick="seleccionarMetodo('{{ metodo }}', this)">
+                                        <div class="card-body text-center">
+                                            {% if metodo == "Stripe" %}
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" style="height:24px;">
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" style="height:24px;">
+                                                <p class="mt-2">Tarjeta de Crédito/Débito</p>
+                                            {% elif metodo == "PayPal" %}
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style="height:40px;">
+                                                <p class="mt-2">PayPal</p>
+                                            {% elif metodo == "Efectivo" %}
+                                                <img src="https://uapas2.bunam.unam.mx/mtm/dinero/images/imagen1_dinero.png" alt="Efectivo" style="height:40px;">
+                                                <p class="mt-2">Pago en Efectivo</p>    
+                                            {% else %}
+                                                <p>{{ metodo }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary mt-2" id="boton-pago">Proceder al Pago</button>
+                    </form>
+                </div>
+                {% elif cupon_aplicado %}
+                <div class="shipping">
+                    <h4>Registro sin costo</h4>
+
+                    {% if compra %}
+                    <form method="post" action="{% url 'registro_por_cupon' entrada.idEntrada compra.id %}" onsubmit="return validarPago();">
+                        {% csrf_token %}
+                        <input type="hidden" name="cupon" value="{{ cupon_aplicado.aCodigo }}">
+                        <button type="submit" class="btn btn-success mt-2">Registrar Entrada</button>
+                    </form>
+                    {% else %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="cupon" value="{{ cupon_aplicado.aCodigo }}">
+                        <input type="hidden" name="metodo_pago" value="gratuito">
+                        <button type="submit" class="btn btn-success mt-2">Continuar con Registro Gratuito</button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-6 col-md-6 col-xs-12">
+                <div class="cart-total">
+                    <h4>Resumen</h4>
+                    <p>Cantidad: <strong>{{ cantidad|default:1 }}</strong></p>
+                    <p>Precio por entrada: <strong>${{ entrada.nCosto|floatformat:2 }}</strong></p>
+
+                    {% if cupon_aplicado %}
+                        {% if cupon_aplicado.lAplicaTotal %}
+                            <p>Descuento total: <strong>
+                                {{ cupon_aplicado.nValor|floatformat:0 }}{% if cupon_aplicado.eTipo == 'porcentaje' %}%{% else %} MXN{% endif %}
+                            </strong></p>
+                        {% else %}
+                            <p>Descuento en una entrada: <strong>
+                                {{ cupon_aplicado.nValor|floatformat:0 }}{% if cupon_aplicado.eTipo == 'porcentaje' %}%{% else %} MXN{% endif %}
+                            </strong></p>
+                        {% endif %}
+                    {% endif %}
+
+                    <p>Total a Pagar: <span>${{ monto_final|floatformat:2 }}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block footer %}
+    {% include "web/layouts/footer.html" %}
+{% endblock footer %}
+
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+
+{% for message in messages %}
+  {% if message.tags == 'success' %}
+  <script>
+    Swal.fire({ icon: 'success', iconColor: '#0ab39c', title: "{{ message }}", showConfirmButton: false, timer: 1500 });
+</script>
+  {% elif message.tags == 'error' %}
+  <script>
+    Swal.fire({ icon: 'error', title: "{{ message }}", showConfirmButton: false, timer: 1500 });
+</script>
+  {% endif %}
+{% endfor %}
+<script>
+    function validarPago() {
+        const cupon = document.getElementById("cupon-input").value;
+        const cuponValidado = "{{ cupon_aplicado.aCodigo|default:'' }}";
+
+        if (cupon && cupon !== cuponValidado) {
+            alert("Primero debes validar el cupón antes de pagar.");
+            return false;
+        }
+        return true;
+    }</script>
+<script>
+    function seleccionarMetodo(metodo, cardElement) {
+
+        document.getElementById('metodo_pago').value = metodo;
+
+        document.querySelectorAll('.metodo-opcion').forEach(card => {
+            card.classList.remove('border-primary');
+        });
+
+        cardElement.classList.add('border-primary');
+    }</script>
+{% endblock extra_js %}

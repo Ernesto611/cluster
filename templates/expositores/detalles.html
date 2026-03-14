@@ -1,0 +1,59 @@
+{% extends "partials/base.html" %}
+{% block title %}Detalles del Conferencista{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Conferencistas" title="Detalles del Conferencista" %}
+            {% endblock pagetitle %}
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Información del Expositor</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Nombre:</strong> {{ expositor.idUsuario.aNombre }} {{ expositor.idUsuario.aApellido }}</p>
+                            <p><strong>Correo Electrónico:</strong> {{ expositor.idUsuario.email }}</p>
+                            <p><strong>Biografía:</strong> {{ expositor.aBiografia }}</p>
+                            {% if expositor.aFoto %}
+                                <p><strong>Foto:</strong></p>
+                                <img src="{{ expositor.aFoto.url }}" alt="Foto del Expositor" class="img-fluid" style="max-width: 200px;">
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Redes Sociales y Contacto</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Teléfono:</strong> {{ expositor.aTelefono|default:"No disponible" }}</p>
+                            <p><strong>WhatsApp:</strong> {{ expositor.aWhatsapp|default:"No disponible" }}</p>
+                            {% if expositor.aFacebook %}
+                                <p><strong>Facebook:</strong> <a href="https://www.facebook.com/{{ expositor.aFacebook }}" target="_blank">{{ expositor.aFacebook }}</a></p>
+                            {% endif %}
+                            {% if expositor.aInstagram %}
+                                <p><strong>Instagram:</strong> <a href="https://www.instagram.com/{{ expositor.aInstagram }}" target="_blank">{{ expositor.aInstagram }}</a></p>
+                            {% endif %}
+                            {% if expositor.aTwitter %}
+                                <p><strong>Twitter:</strong> <a href="https://twitter.com/{{ expositor.aTwitter }}" target="_blank">{{ expositor.aTwitter }}</a></p>
+                            {% endif %}
+                            {% if expositor.aSitioWeb %}
+                                <p><strong>Sitio Web:</strong> <a href="{{ expositor.aSitioWeb }}" target="_blank">{{ expositor.aSitioWeb }}</a></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-end mb-3">
+                    <a href="{% url 'listado_expositores' %}" class="btn btn-secondary">Volver al Listado</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

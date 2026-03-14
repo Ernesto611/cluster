@@ -1,0 +1,306 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Aportadores{% endblock title %}
+
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Aportaciones" title="Listado de Aportadores" %}
+            {% endblock pagetitle %}
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" id="contributorList">
+                        <div class="card-header border-0">
+                            <div class="row align-items-center gy-3">
+                                <div class="col-sm">
+                                    <h5 class="card-title mb-0">Listado de Aportadores</h5>
+                                </div>
+                                <div class="col-sm-auto">
+                                    <div class="d-flex gap-1 flex-wrap">
+                                        {% if user.tipo_usuario == 'super_administrador' or 'agregar' in permisos %}
+                                        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAportadorModal">
+                                            <i class="ri-add-line align-bottom me-1"></i> Nuevo Aportador
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body border border-dashed border-end-0 border-start-0">
+                            <form method="get" class="row g-3 mb-3">
+                                <div class="d-flex flex-wrap align-items-end gap-3">
+                                    <div class="flex-grow-1">
+                                        <div class="search-box">
+                                            <input type="text" name="q" class="form-control" placeholder="Buscar por nombre o email..." value="{{ q|default_if_none:'' }}">
+                                            <i class="ri-search-line search-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <button type="submit" class="btn btn-primary w-100"><i class="ri-filter-line"></i></button>
+                                    </div>
+                                </div>    
+                            </form>
+                        </div>
+                        <br>
+                        <div class="card-body pt-0">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div id="table-counter" class="text-muted small" aria-live="polite">
+                                        Mostrando 0–0 de 0 registros
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="table-responsive table-card mb-1">
+                                    <table class="table table-nowrap align-middle" id="orderTable">
+                                        <thead class="text-muted table-light">
+                                            <tr class="text-uppercase fs-13">
+                                                <th class="sort" data-sort="contributor_name">Nombre</th>
+                                                <th class="sort" data-sort="contributor_email">Email</th>
+                                                <th class="sort" data-sort="status">Estado</th>
+                                                <th>Opciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="list form-check-all">
+                                            {% for aportador in aportadores %}
+                                            <tr>
+                                                <td class="contributor_name">{{ aportador.aNombre }}</td>
+                                                <td class="contributor_email">{{ aportador.aEmail }}</td>
+                                                <td class="status">
+                                                    {% if aportador.lActivo %}
+                                                    <span class="badge bg-success text-uppercase">Activo</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger text-uppercase">Inactivo</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <ul class="list-inline hstack gap-2 mb-0">
+                                                        {% if user.tipo_usuario == 'super_administrador' or 'editar' in permisos %}
+                                                        <li class="list-inline-item edit" data-bs-toggle="tooltip" title="Editar">
+                                                            <button class="btn btn-link text-primary p-0 edit-btn" style="text-decoration: none;" 
+                                                                    data-bs-toggle="modal" 
+                                                                    data-bs-target="#editAportadorModal" 
+                                                                    data-id="{{ aportador.idAportador }}" 
+                                                                    data-nombre="{{ aportador.aNombre }}"
+                                                                    data-email="{{ aportador.aEmail }}">
+                                                                <i class="ri-edit-box-line fs-16"></i>
+                                                            </button>
+                                                        </li>  
+                                                        {% endif %}
+                                                        {% if user.tipo_usuario == 'super_administrador' or 'desactivar' in permisos %}                                                      
+                                                        <li class="list-inline-item" data-bs-toggle="tooltip" title="{% if aportador.lActivo %}Desactivar{% else %}Activar{% endif %}">
+                                                            <form action="{% url 'alternar_estado_aportador' aportador.idAportador %}" method="POST" class="toggle-form d-inline">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-link p-0 text-warning" style="text-decoration: none;">
+                                                                    <i class="{% if aportador.lActivo %}ri-toggle-fill{% else %}ri-toggle-line{% endif %} fs-16"></i>
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        {% endif %}
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                                {% if q %}
+                                                <script>
+                                                    document.addEventListener('DOMContentLoaded', function () {
+                                                        document.querySelector('.noresult').style.display = 'block';
+                                                    });
+</script>
+                                                {% else %}
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No hay aportadores registrados.</td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <div class="noresult" style="display: none">
+                                        <div class="text-center">
+                                            <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:75px;height:75px"></lord-icon>
+                                            <h5 class="mt-2">¡No encontramos ningún resultado!</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <div class="pagination-wrap hstack gap-2">
+                                        <a class="page-item pagination-prev disabled" href="#">
+                                            Anterior
+                                        </a>
+                                        <ul class="pagination listjs-pagination mb-0"></ul>
+                                        <a class="page-item pagination-next" href="#">
+                                            Siguiente
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% block footer %}
+    {% include "partials/footer.html" %}
+    {% endblock footer %}
+</div>
+
+<div class="modal fade" id="addAportadorModal" tabindex="-1" aria-labelledby="addAportadorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAportadorModalLabel">Agregar Nuevo Aportador</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'agregar_aportador' %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="aportadorNombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="aportadorNombre" name="aNombre" placeholder="Ingrese el nombre del aportador" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="aportadorEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="aportadorEmail" name="aEmail" placeholder="Ingrese el email del aportador" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editAportadorModal" tabindex="-1" aria-labelledby="editAportadorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAportadorModalLabel">Editar Aportador</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'editar_aportador' 0 %}" method="POST" id="editAportadorForm">
+                {% csrf_token %}
+                <input type="hidden" id="editAportadorId" name="idAportador">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editAportadorNombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="editAportadorNombre" name="aNombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editAportadorEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editAportadorEmail" name="aEmail" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'libs/list.js/dist/list.min.js'%}"></script>
+<script src="{% static 'libs/list.pagination.js/dist/list.pagination.min.js'%}"></script>
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'success',
+            iconColor: '#0ab39c',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% elif message.tags == 'error' %}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var m = "{{ message }}";
+        Swal.fire({
+            icon: 'error',
+            title: m,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+</script>
+    {% endif %}
+{% endfor %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const editModal = document.getElementById('editAportadorModal');
+        const editForm = document.getElementById('editAportadorForm');
+        const editAportadorIdInput = document.getElementById('editAportadorId');
+        const editAportadorNombreInput = document.getElementById('editAportadorNombre');
+        const editAportadorEmailInput = document.getElementById('editAportadorEmail');
+
+        editModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const idAportador = button.getAttribute('data-id');
+            const nombre = button.getAttribute('data-nombre');
+            const email = button.getAttribute('data-email');
+            editAportadorIdInput.value = idAportador;
+            editAportadorNombreInput.value = nombre;
+            editAportadorEmailInput.value = email;
+            editForm.action = `{% url 'editar_aportador' 0 %}`.replace('0', idAportador);
+        });
+    });</script>
+<script>
+    var options = {
+        valueNames: ['contributor_name', 'contributor_email', 'status'],
+        page: 10,
+        pagination: true
+    };
+
+    var contributorList = new List('contributorList', options);
+
+    function renderCounter(list) {
+        const el = document.getElementById('table-counter');
+        if (!el) return;
+
+        const total = list.matchingItems ? list.matchingItems.length : list.size();
+
+        let start = 0, end = 0;
+        if (total > 0) {
+
+            start = list.i;
+            end = list.i + list.visibleItems.length - 1;
+        }
+
+        const sufijo = (total === 1) ? 'registro' : 'registros';
+        el.textContent = `Mostrando ${start}–${end} de ${total} ${sufijo}`;
+    }
+
+    function togglePaginationControls() {
+        const paginationContainer = document.querySelector('.pagination-wrap');
+        const totalItems = contributorList.matchingItems ? contributorList.matchingItems.length : contributorList.size();
+        const itemsPerPage = contributorList.page;
+
+        if (totalItems <= itemsPerPage) {
+            paginationContainer.style.display = 'none';
+        } else {
+            paginationContainer.style.display = 'flex';
+        }
+    }
+
+    renderCounter(contributorList);
+    togglePaginationControls();
+
+    contributorList.on('updated', function (list) {
+        renderCounter(list);
+        togglePaginationControls();
+    });</script>
+{% endblock %}

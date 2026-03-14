@@ -1,0 +1,41 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Asignar Actividades{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Conferencistas" title="Asignar Actividades" %}
+            {% endblock pagetitle %}
+
+            <h5 class="text-center">Asignar Actividades a <strong>{{ expositor.idUsuario.aNombre }} {{ expositor.idUsuario.aApellido }}</strong></h5>
+
+            <form method="POST" id="assign-activities-form">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h6>Actividades Disponibles</h6>
+                        <ul class="list-group">
+                            {% for actividad in actividades %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <label>
+                                        <input type="checkbox" name="actividades" value="{{ actividad.idActividad }}"
+                                            {% if actividad.idActividad in actividades_asignadas %} checked {% endif %}>
+                                        {{ actividad.aNombre }} - {{ actividad.idEvento.aNombre }}
+                                    </label>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-primary">Guardar Asignaciones</button>
+                    <a href="{% url 'listado_expositores' %}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

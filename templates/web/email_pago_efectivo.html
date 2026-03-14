@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación de Compra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Imprima&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Imprima', Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            background: white;
+            margin: 30px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+        }
+        .header img {
+            width: 100px;
+        }
+        .content {
+            text-align: center;
+            padding: 20px;
+        }
+        .content h2 {
+            color: #2D3142;
+        }
+        .content p {
+            font-size: 16px;
+            color: #555;
+        }
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 15px 25px;
+            background-color: #7630f3;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #999;
+        }
+        .details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+            margin-top: 20px;
+        }
+        .details p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="https://registroclustertim.com">
+                <img src="https://registroclustertim.com/static/web/images/logo_cluster2.png" alt="Logo">
+            </a>
+        </div>
+        <div class="content">
+            <h2>¡Gracias por tu registro, {{ compra.usuario.aNombre }}!</h2>
+            <p>Tu compra ha sido registrada. Para completar tu inscripción, realiza tu pago con los siguientes datos:</p>
+
+            <div class="details">
+                <p><strong>Banco:</strong> {{ datos_pago.aNombreBanco }}</p>
+                <p><strong>Beneficiario:</strong> {{ datos_pago.aNombreBeneficiario }}</p>
+                <p><strong>Número de cuenta:</strong> {{ datos_pago.aNumeroCuenta }}</p>
+                <p><strong>CLABE:</strong> {{ datos_pago.aClabe }}</p>
+                <p><strong>Referencia:</strong> {{ compra.referencia_pago }}</p>
+                <p><strong>Monto a pagar:</strong> ${{ compra.monto_pago|floatformat:2 }} MXN</p>
+            </div>
+
+            <p>Una vez realizado tu pago, sube tu comprobante desde tu sección de compras.</p>
+            <a href="https://registroclustertim.com/mis-compras/" class="button">Subir Comprobante</a>
+
+            <p style="margin-top: 20px; font-size: 14px;">Importante: El comprobante será revisado por un administrador. Una vez validado, se activará tu entrada.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 EVENTOS CLUSTERTIM - Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>
